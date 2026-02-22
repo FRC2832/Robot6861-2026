@@ -1,0 +1,37 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Center Approach Outpost"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Load Outpost"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Leave Outpost"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Center Approach Hub"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": "Center",
+  "choreoAuto": false
+}

@@ -1,0 +1,80 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Left Bump Leave Start"
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 3.0
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Shoot"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Left Bump Approach Outpost"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Start Ingestor"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Load Outpost"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Stop Ingestor"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Leave Outpost"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Left Bump Shoot from Outpost"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": "Left Bump",
+  "choreoAuto": false
+}

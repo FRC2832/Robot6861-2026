@@ -1,0 +1,37 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Right Bump Leave Start"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Right Bump Approach Depot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Right Bump Leave Depot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Right Bump Approach Tower"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}
