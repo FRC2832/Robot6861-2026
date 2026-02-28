@@ -20,7 +20,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Ports;
 
-public class Floor extends SubsystemBase {
+public class FloorSubsystem extends SubsystemBase {
     public enum Speed {
         STOP(0),
         FEED(0.83);
@@ -39,7 +39,7 @@ public class Floor extends SubsystemBase {
     private final TalonFX motor;
     private final VoltageOut voltageRequest = new VoltageOut(0);
 
-    public Floor() {
+    public FloorSubsystem() {
         motor = new TalonFX(Ports.kFloor, Ports.kRoboRioCANBus);
 
         final TalonFXConfiguration config = new TalonFXConfiguration()
