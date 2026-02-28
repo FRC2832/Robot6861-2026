@@ -18,7 +18,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Ports;
 
-public class Hoodsubsystem extends SubsystemBase {
+public class HoodSubsystem extends SubsystemBase {
     private static final Distance kServoLength = Millimeters.of(100);
     private static final LinearVelocity kMaxServoSpeed = Millimeters.of(20).per(Second);
     private static final double kMinPosition = 0.01;
@@ -32,7 +32,7 @@ public class Hoodsubsystem extends SubsystemBase {
     private double targetPosition = 0.5;
     private Time lastUpdateTime = Seconds.of(0);
 
-    public Hoodsubsystem() {
+    public HoodSubsystem() {
         leftServo = new Servo(Ports.kHoodLeftServo);
         rightServo = new Servo(Ports.kHoodRightServo);
         leftServo.setBoundsMicroseconds(2000, 1800, 1500, 1200, 1000);
