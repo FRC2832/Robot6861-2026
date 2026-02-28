@@ -19,6 +19,12 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.generated.TunerConstants;
 import frc.robot.commands.SpeedModeCMD;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.FeederSubsystem;
+import frc.robot.subsystems.Floor;
+import frc.robot.subsystems.HangerSubsystem;
+import frc.robot.subsystems.Hoodsubsystem;
+import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Shooter;
 
 public class RobotContainer {
     // TODO: Once robot has bumpers and drivers are able to drive proficiently
@@ -40,6 +46,13 @@ public class RobotContainer {
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
+    public final Intake intake = new Intake();
+    public final Floor floor = new Floor();
+    public final FeederSubsystem feeder = new FeederSubsystem();
+    public final Shooter shooter = new Shooter();
+    public final Hoodsubsystem hood = new Hoodsubsystem();
+    public final HangerSubsystem hanger = new HangerSubsystem();
+
     public RobotContainer() {
         configureBindings();
     }
@@ -50,8 +63,8 @@ public class RobotContainer {
         drivetrain.setDefaultCommand(
             // Drivetrain will execute this command periodically
             drivetrain.applyRequest(() ->
-                drive.withVelocityX(driverController.getLeftY() * MaxSpeed * speedMultiplier) // Drive forward with negative Y (forward)
-                    .withVelocityY(driverController.getLeftX() * MaxSpeed * speedMultiplier) // Drive left with negative X (left)
+                drive.withVelocityX(-driverController.getLeftY() * MaxSpeed * speedMultiplier) // Drive forward with negative Y (forward)
+                    .withVelocityY(-driverController.getLeftX() * MaxSpeed * speedMultiplier) // Drive left with negative X (left)
                     .withRotationalRate(-driverController.getRightX() * MaxAngularRate * speedMultiplier) // Drive counterclockwise with negative X (left)
                     .withDeadband(MaxSpeed * speedMultiplier * 0.15)
             )
@@ -79,9 +92,9 @@ public class RobotContainer {
         // Reset the field-centric heading on left bumper press.
         driverController.start().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
         //this is turtle mode //TODO: decrease thresholds as robot speed increases
-        driverController.leftTrigger(0.2).whileTrue(new SpeedModeCMD(this,0.7));
+        driverController.leftTrigger(0.2).and(driverController.leftTrigger(0.6).negate()).whileTrue(new SpeedModeCMD(this, 0.7));
         //this is snail mode //TODO: decrease thresholds as robot speed increases
-        driverController.leftTrigger(0.6).whileTrue(new SpeedModeCMD(this,0.4));
+        driverController.leftTrigger(0.6).whileTrue(new SpeedModeCMD(this, 0.4));
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }
