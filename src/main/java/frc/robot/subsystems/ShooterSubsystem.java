@@ -27,7 +27,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.KrakenX60;
 import frc.robot.Ports;
 
-public class Shooter extends SubsystemBase {
+public class ShooterSubsystem extends SubsystemBase {
     private static final AngularVelocity kVelocityTolerance = RPM.of(100);
 
     private final TalonFX leftMotor, middleMotor, rightMotor;
@@ -37,7 +37,7 @@ public class Shooter extends SubsystemBase {
 
     private double dashboardTargetRPM = 0.0;
 
-    public Shooter() {
+    public ShooterSubsystem() {
         leftMotor = new TalonFX(Ports.kShooterLeft, Ports.kRoboRioCANBus);
         middleMotor = new TalonFX(Ports.kShooterMiddle, Ports.kRoboRioCANBus);
         rightMotor = new TalonFX(Ports.kShooterRight, Ports.kRoboRioCANBus);

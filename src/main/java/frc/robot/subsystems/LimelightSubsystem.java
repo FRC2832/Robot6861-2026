@@ -14,12 +14,12 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.LimelightHelpers;
 import frc.robot.LimelightHelpers.PoseEstimate;
 
-public class Limelight extends SubsystemBase {
+public class LimelightSubsystem extends SubsystemBase {
     private final String name;
     private final NetworkTable telemetryTable;
     private final StructPublisher<Pose2d> posePublisher;
 
-    public Limelight(String name) {
+    public LimelightSubsystem(String name) {
         this.name = name;
         this.telemetryTable = NetworkTableInstance.getDefault().getTable("SmartDashboard/" + name);
         this.posePublisher = telemetryTable.getStructTopic("Estimated Robot Pose", Pose2d.struct).publish();
