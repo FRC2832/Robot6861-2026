@@ -46,7 +46,7 @@ public class FeederSubsystem extends SubsystemBase {
     private final VelocityVoltage velocityRequest = new VelocityVoltage(0).withSlot(0);
     private final VoltageOut voltageRequest = new VoltageOut(0);
 
-    public Feeder() {
+    public FeederSubsystem() {
         motor = new TalonFX(Ports.kFeeder, Ports.kRoboRioCANBus);
 
         final TalonFXConfiguration config = new TalonFXConfiguration()
