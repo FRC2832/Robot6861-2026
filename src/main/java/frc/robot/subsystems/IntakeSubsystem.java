@@ -32,7 +32,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.KrakenX60;
 import frc.robot.Ports;
 
-public class Intake extends SubsystemBase {
+public class IntakeSubsystem extends SubsystemBase {
     public enum Speed {
         STOP(0),
         INTAKE(0.8);
@@ -76,7 +76,7 @@ public class Intake extends SubsystemBase {
 
     private boolean isHomed = false;
 
-    public Intake() {
+    public IntakeSubsystem() {
         pivotMotor = new TalonFX(Ports.kIntakePivot, Ports.kCANivoreCANBus);
         rollerMotor = new TalonFX(Ports.kIntakeRollers, Ports.kRoboRioCANBus);
         configurePivotMotor();
