@@ -20,11 +20,13 @@ import frc.robot.generated.TunerConstants;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-    // public static class Driving {
-      //  public static final LinearVelocity kMaxSpeed = TunerConstants.kSpeedAt12Volts;
-        //public static final AngularVelocity kMaxRotationalRate = RotationsPerSecond.of(1);
-        //public static final AngularVelocity kPIDRotationDeadband = kMaxRotationalRate.times(0.005);
-    //}
+    public static class Driving {
+      public static double DriveSpeedReduction = 0.5; 
+      public static double AngularRateReduction = 0.4;
+      public static final LinearVelocity kMaxSpeed = TunerConstants.kSpeedAt12Volts;
+      public static final AngularVelocity kMaxRotationalRate = RotationsPerSecond.of(1);
+      public static final AngularVelocity kPIDRotationDeadband = kMaxRotationalRate.times(0.005);
+    }
 
     public static class KrakenX60 {
         public static final AngularVelocity kFreeSpeed = RPM.of(6000);

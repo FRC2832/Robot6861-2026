@@ -19,12 +19,21 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.generated.TunerConstants;
 import frc.robot.commands.SpeedModeCMD;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.FeederSubsystem;
+import frc.robot.subsystems.FloorSubsystem;
+import frc.robot.subsystems.HangerSubsystem;
+import frc.robot.subsystems.HoodSubsystem;
+import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.LimelightSubsystem;
+import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.Constants;
 
 public class RobotContainer {
-    // TODO: Once robot has bumpers and drivers are able to drive proficiently
-    private final double MaxSpeed = 0.5 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
+    // TODO: Once robot has bumpers and drivers are able to drive proficiently increase drivespeedreduction
+    private final double MaxSpeed = Constants.Driving.DriveSpeedReduction * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
+    
     // TODO: Increase values eventually and put these values into Constants file
-    private final double MaxAngularRate = 0.4 * RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+    private final double MaxAngularRate = Constants.Driving.AngularRateReduction * RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
     private double speedMultiplier = 1.0; 
 
     /* Setting up bindings for necessary control of the swerve drive platform */
@@ -39,6 +48,15 @@ public class RobotContainer {
     private final CommandXboxController operatorController = new CommandXboxController(1);
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+
+    // Subsystem instantiation
+    private final FeederSubsystem feederSubsystem = new FeederSubsystem();
+    private final FloorSubsystem floorSubsystem = new FloorSubsystem();
+    private final HangerSubsystem hangerSubsystem = new HangerSubsystem();
+    private final HoodSubsystem hoodSubsystem = new HoodSubsystem();
+    private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
+    private final LimelightSubsystem limelightSubsystem = new LimelightSubsystem("limelight");
+    private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
 
     public RobotContainer() {
         configureBindings();
@@ -76,10 +94,12 @@ public class RobotContainer {
         //driverController.start().and(driverController.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
         //driverController.start().and(driverController.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
-        // Reset the field-centric heading on left bumper press.
+        // Reset the field-centric heading on start press.
         driverController.start().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+
         //this is turtle mode //TODO: decrease thresholds as robot speed increases
         driverController.leftTrigger(0.2).whileTrue(new SpeedModeCMD(this,0.7));
+        
         //this is snail mode //TODO: decrease thresholds as robot speed increases
         driverController.leftTrigger(0.6).whileTrue(new SpeedModeCMD(this,0.4));
 
