@@ -66,7 +66,7 @@ public class HangerSubsystem extends SubsystemBase {
     private boolean isHomed = false;
 
     public HangerSubsystem() {
-        motor = new TalonFX(Ports.kHanger, Ports.kRoboRioCANBus);
+        motor = new TalonFX(Ports.kHanger, Ports.kCANivoreCANBus);
 
         final TalonFXConfiguration config = new TalonFXConfiguration()
             .withMotorOutput(
@@ -76,9 +76,9 @@ public class HangerSubsystem extends SubsystemBase {
             )
             .withCurrentLimits(
                 new CurrentLimitsConfigs()
-                    .withStatorCurrentLimit(Amps.of(20))
+                    .withStatorCurrentLimit(Amps.of(80))
                     .withStatorCurrentLimitEnable(true)
-                    .withSupplyCurrentLimit(Amps.of(70))
+                    .withSupplyCurrentLimit(Amps.of(50))
                     .withSupplyCurrentLimitEnable(true)
             )
             .withMotionMagic(

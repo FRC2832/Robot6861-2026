@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 import frc.robot.generated.TunerConstants;
 import frc.robot.commands.SpeedModeCMD;
+import frc.robot.commands.SubsystemCommands;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.FeederSubsystem;
 import frc.robot.subsystems.FloorSubsystem;
@@ -57,6 +58,9 @@ public class RobotContainer {
     private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
     private final LimelightSubsystem limelightSubsystem = new LimelightSubsystem("limelight");
     private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
+
+    // Command instantiation
+    private final SubsystemCommands subsystemCommands = new SubsystemCommands(drivetrain, intakeSubsystem, floorSubsystem, feederSubsystem, shooterSubsystem, hoodSubsystem, hangerSubsystem);
 
     public RobotContainer() {
         configureBindings();
@@ -104,7 +108,47 @@ public class RobotContainer {
         driverController.leftTrigger(0.6).whileTrue(new SpeedModeCMD(this,0.4));
 
         drivetrain.registerTelemetry(logger::telemeterize);
+        
+        // BELOW IS COPIED FROM WCP
+        //limelight.setDefaultCommand(updateVisionCommand());
+
+        RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop())
+            .onTrue(Commands.sequence(
+                //hangerSubsystem.homingCommand(),
+                //intakeSubsystem.homingCommand()  // may need to increase current for both
+                
+            )); //TODO: make parallel again
+
+            // Original parallel
+            //.onTrue(intakeSubsystem.homingCommand())
+            //.onTrue(hangerSubsystem.homingCommand());
+
+        //driverController.rightTrigger().whileTrue(subsystemCommands.aimAndShoot());
+        driverController.rightBumper().whileTrue(subsystemCommands.shootManually());
+        operatorController.leftTrigger().whileTrue(intakeSubsystem.intakeCommand());
+        operatorController.leftBumper().onTrue(intakeSubsystem.runOnce(() -> intakeSubsystem.set(IntakeSubsystem.Position.STOWED)));
+
+        driverController.povUp().onTrue(hangerSubsystem.positionCommand(HangerSubsystem.Position.HANGING));
+        driverController.povDown().onTrue(hangerSubsystem.positionCommand(HangerSubsystem.Position.HUNG));
     }
+
+    // THIS METHOD IS COPIED FROM WCP
+    /* 
+    private void configureManualDriveBindings() {
+        final ManualDriveCommand manualDriveCommand = new ManualDriveCommand(
+            swerve, 
+            () -> -driver.getLeftY(), 
+            () -> -driver.getLeftX(), 
+            () -> -driver.getRightX()
+        );
+        swerve.setDefaultCommand(manualDriveCommand);
+        driver.a().onTrue(Commands.runOnce(() -> manualDriveCommand.setLockedHeading(Rotation2d.k180deg)));
+        driver.b().onTrue(Commands.runOnce(() -> manualDriveCommand.setLockedHeading(Rotation2d.kCW_90deg)));
+        driver.x().onTrue(Commands.runOnce(() -> manualDriveCommand.setLockedHeading(Rotation2d.kCCW_90deg)));
+        driver.y().onTrue(Commands.runOnce(() -> manualDriveCommand.setLockedHeading(Rotation2d.kZero)));
+        driver.back().onTrue(Commands.runOnce(() -> manualDriveCommand.seedFieldCentric()));
+    }
+    */
 
     public Command getAutonomousCommand() {
         // Simple drive forward auton

@@ -47,7 +47,7 @@ public class FeederSubsystem extends SubsystemBase {
     private final VoltageOut voltageRequest = new VoltageOut(0);
 
     public FeederSubsystem() {
-        motor = new TalonFX(Ports.kFeeder, Ports.kRoboRioCANBus);
+        motor = new TalonFX(Ports.kFeeder, Ports.kCANivoreCANBus);
 
         final TalonFXConfiguration config = new TalonFXConfiguration()
             .withMotorOutput(
@@ -57,9 +57,9 @@ public class FeederSubsystem extends SubsystemBase {
             )
             .withCurrentLimits(
                 new CurrentLimitsConfigs()
-                    .withStatorCurrentLimit(Amps.of(120))
+                    .withStatorCurrentLimit(Amps.of(100))
                     .withStatorCurrentLimitEnable(true)
-                    .withSupplyCurrentLimit(Amps.of(50))
+                    .withSupplyCurrentLimit(Amps.of(60))
                     .withSupplyCurrentLimitEnable(true)
             )
             .withSlot0(

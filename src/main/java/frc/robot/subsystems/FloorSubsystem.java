@@ -40,7 +40,7 @@ public class FloorSubsystem extends SubsystemBase {
     private final VoltageOut voltageRequest = new VoltageOut(0);
 
     public FloorSubsystem() {
-        motor = new TalonFX(Ports.kFloor, Ports.kRoboRioCANBus);
+        motor = new TalonFX(Ports.kFloor, Ports.kCANivoreCANBus);
 
         final TalonFXConfiguration config = new TalonFXConfiguration()
             .withMotorOutput(
@@ -50,9 +50,9 @@ public class FloorSubsystem extends SubsystemBase {
             )
             .withCurrentLimits(
                 new CurrentLimitsConfigs()
-                    .withStatorCurrentLimit(Amps.of(120))
+                    .withStatorCurrentLimit(Amps.of(60))
                     .withStatorCurrentLimitEnable(true)
-                    .withSupplyCurrentLimit(Amps.of(30))
+                    .withSupplyCurrentLimit(Amps.of(40))
                     .withSupplyCurrentLimitEnable(true)
             );
 
