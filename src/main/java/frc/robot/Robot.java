@@ -44,7 +44,11 @@ public class Robot extends TimedRobot {
         m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
         if (m_autonomousCommand != null) {
-            CommandScheduler.getInstance().schedule(m_autonomousCommand);
+            CommandScheduler.getInstance().cancel(m_autonomousCommand);
+        
+        // Original code - figure out why it started running
+        //if (m_autonomousCommand != null) {
+            //CommandScheduler.getInstance().schedule(m_autonomousCommand);
         }
     }
 
