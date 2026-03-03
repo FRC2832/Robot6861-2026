@@ -51,7 +51,7 @@ public class IntakeSubsystem extends SubsystemBase {
     public enum Position {
         HOMED(110),
         STOWED(100),
-        INTAKE(-4),
+        INTAKE(28), // was -4
         AGITATE(20);
 
         private final double degrees;
@@ -191,7 +191,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public Command homingCommand() {
         return Commands.sequence(
-            runOnce(() -> setPivotPercentOutput(0.075)), // was 0.1
+            runOnce(() -> setPivotPercentOutput(0.1)), // was 0.1
             Commands.waitUntil(() -> pivotMotor.getSupplyCurrent().getValue().in(Amps) > 6),
             runOnce(() -> {
                 pivotMotor.setPosition(Position.HOMED.angle());

@@ -124,6 +124,7 @@ public class HangerSubsystem extends SubsystemBase {
             runOnce(() -> {
                 motor.setPosition(Position.HOMED.motorAngle());
                 isHomed = true;
+                System.out.println("************ is homed *******=" + isHomed);
                 set(Position.EXTEND_HOPPER);
             })
         )

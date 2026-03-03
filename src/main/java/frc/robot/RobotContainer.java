@@ -113,15 +113,9 @@ public class RobotContainer {
         //limelight.setDefaultCommand(updateVisionCommand());
 
         RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop())
-            .onTrue(Commands.sequence(
-                //hangerSubsystem.homingCommand(),
-                //intakeSubsystem.homingCommand()  // may need to increase current for both
-                
-            )); //TODO: make parallel again
-
-            // Original parallel
-            //.onTrue(intakeSubsystem.homingCommand())
-            //.onTrue(hangerSubsystem.homingCommand());
+            
+            .onTrue(intakeSubsystem.homingCommand())
+            .onTrue(hangerSubsystem.homingCommand());
 
         //driverController.rightTrigger().whileTrue(subsystemCommands.aimAndShoot());
         driverController.rightBumper().whileTrue(subsystemCommands.shootManually());
