@@ -112,18 +112,25 @@ public class RobotContainer {
         // BELOW IS COPIED FROM WCP
         //limelight.setDefaultCommand(updateVisionCommand());
 
-        RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop())
+
+        // Set to a button for homing in the pit
+        //RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop())
             
-            .onTrue(intakeSubsystem.homingCommand())
-            .onTrue(hangerSubsystem.homingCommand());
+           // .onTrue(intakeSubsystem.homingCommand())
+           // .onTrue(hangerSubsystem.homingCommand());
 
         //driverController.rightTrigger().whileTrue(subsystemCommands.aimAndShoot());
         driverController.rightBumper().whileTrue(subsystemCommands.shootManually());
+
+        
+        driverController.povUp().onTrue(hangerSubsystem.positionCommand(HangerSubsystem.Position.HANGING));
+        driverController.povDown().onTrue(hangerSubsystem.positionCommand(HangerSubsystem.Position.HUNG));
+
+
         operatorController.leftTrigger().whileTrue(intakeSubsystem.intakeCommand());
         operatorController.leftBumper().onTrue(intakeSubsystem.runOnce(() -> intakeSubsystem.set(IntakeSubsystem.Position.STOWED)));
 
-        driverController.povUp().onTrue(hangerSubsystem.positionCommand(HangerSubsystem.Position.HANGING));
-        driverController.povDown().onTrue(hangerSubsystem.positionCommand(HangerSubsystem.Position.HUNG));
+        
     }
 
     // THIS METHOD IS COPIED FROM WCP
