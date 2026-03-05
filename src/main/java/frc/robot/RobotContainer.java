@@ -128,6 +128,7 @@ public class RobotContainer {
 
 
         operatorController.leftTrigger().whileTrue(intakeSubsystem.intakeCommand());
+        operatorController.start().onTrue(intakeSubsystem.homingCommand());
         operatorController.leftBumper().onTrue(intakeSubsystem.runOnce(() -> intakeSubsystem.set(IntakeSubsystem.Position.STOWED)));
 
         

@@ -51,8 +51,8 @@ public class IntakeSubsystem extends SubsystemBase {
     public enum Position {
         HOMED(75),
         STOWED(65),
-        INTAKE(-1.0), // was -4
-        AGITATE(20);  // was 20
+        INTAKE(-78.0), // was -4
+        AGITATE(-50);  // was 20
 
         private final double degrees;
 
@@ -129,7 +129,7 @@ public class IntakeSubsystem extends SubsystemBase {
                 new CurrentLimitsConfigs()
                     .withStatorCurrentLimit(Amps.of(90))
                     .withStatorCurrentLimitEnable(true)
-                    .withSupplyCurrentLimit(Amps.of(60))
+                    .withSupplyCurrentLimit(Amps.of(70))
                     .withSupplyCurrentLimitEnable(true)
             );
         rollerMotor.getConfigurator().apply(config);
@@ -210,5 +210,6 @@ public class IntakeSubsystem extends SubsystemBase {
         builder.addDoubleProperty("RPM", () -> rollerMotor.getVelocity().getValue().in(RPM), null);
         builder.addDoubleProperty("Pivot Supply Current", () -> pivotMotor.getSupplyCurrent().getValue().in(Amps), null);
         builder.addDoubleProperty("Roller Supply Current", () -> rollerMotor.getSupplyCurrent().getValue().in(Amps), null);
+
     }
 }
