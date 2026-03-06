@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Fahrenheit;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Second;
@@ -210,6 +211,7 @@ public class IntakeSubsystem extends SubsystemBase {
         builder.addDoubleProperty("RPM", () -> rollerMotor.getVelocity().getValue().in(RPM), null);
         builder.addDoubleProperty("Pivot Supply Current", () -> pivotMotor.getSupplyCurrent().getValue().in(Amps), null);
         builder.addDoubleProperty("Roller Supply Current", () -> rollerMotor.getSupplyCurrent().getValue().in(Amps), null);
-
+        builder.addDoubleProperty("Pivot Temp (F)", () -> pivotMotor.getDeviceTemp().getValue().in(Fahrenheit), null);
+        builder.addDoubleProperty("Roller Temp (F)", () -> rollerMotor.getDeviceTemp().getValue().in(Fahrenheit), null);
     }
 }
