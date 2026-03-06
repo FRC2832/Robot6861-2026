@@ -127,10 +127,11 @@ public class RobotContainer {
         driverController.povDown().onTrue(hangerSubsystem.positionCommand(HangerSubsystem.Position.HUNG));
 
 
-        operatorController.leftTrigger().whileTrue(intakeSubsystem.intakeCommand());
+        operatorController.rightTrigger().whileTrue(intakeSubsystem.intakeCommand()); // was leftTrigger
         operatorController.start().onTrue(intakeSubsystem.homingCommand());
-        operatorController.leftBumper().onTrue(intakeSubsystem.runOnce(() -> intakeSubsystem.set(IntakeSubsystem.Position.STOWED)));
-
+        operatorController.back().onTrue(intakeSubsystem.runOnce(() -> intakeSubsystem.set(IntakeSubsystem.Position.STOWED))); // was leftBumper
+        operatorController.rightBumper().whileTrue(subsystemCommands.shootManually()); // added
+        operatorController.rightStick().onTrue(hoodSubsystem.positionCommand(hoodSubsystem.targetPosition)); // added
         
     }
 
