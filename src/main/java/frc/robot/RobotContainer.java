@@ -79,6 +79,15 @@ public class RobotContainer {
             )
         );
 
+        hoodSubsystem.setDefaultCommand(
+            hoodSubsystem.run(() -> {
+                double joystickY = -operatorController.getRightY();
+                if (Math.abs(joystickY) > 0.1) {
+                    hoodSubsystem.setPosition(hoodSubsystem.targetPosition + joystickY *0.005);
+                }  
+            }
+            )
+        );
         // Idle while the robot is disabled. This ensures the configured
         // neutral mode is applied to the drive motors while disabled.
         final var idle = new SwerveRequest.Idle();
@@ -131,7 +140,6 @@ public class RobotContainer {
         operatorController.start().onTrue(intakeSubsystem.homingCommand());
         operatorController.back().onTrue(intakeSubsystem.runOnce(() -> intakeSubsystem.set(IntakeSubsystem.Position.STOWED))); // was leftBumper
         operatorController.rightBumper().whileTrue(subsystemCommands.shootManually()); // added
-        operatorController.rightStick().onTrue(hoodSubsystem.positionCommand(hoodSubsystem.targetPosition)); // added
         
     }
 
