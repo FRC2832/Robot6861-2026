@@ -57,7 +57,7 @@ public class FeederSubsystem extends SubsystemBase {
             )
             .withCurrentLimits(
                 new CurrentLimitsConfigs()
-                    .withStatorCurrentLimit(Amps.of(100))
+                    .withStatorCurrentLimit(Amps.of(80))
                     .withStatorCurrentLimitEnable(true)
                     .withSupplyCurrentLimit(Amps.of(60))
                     .withSupplyCurrentLimitEnable(true)
@@ -94,9 +94,9 @@ public class FeederSubsystem extends SubsystemBase {
 
     @Override
     public void initSendable(SendableBuilder builder) {
-        builder.addStringProperty("Command", () -> getCurrentCommand() != null ? getCurrentCommand().getName() : "null", null);
-        builder.addDoubleProperty("RPM", () -> motor.getVelocity().getValue().in(RPM), null);
-        builder.addDoubleProperty("Stator Current", () -> motor.getStatorCurrent().getValue().in(Amps), null);
-        builder.addDoubleProperty("Supply Current", () -> motor.getSupplyCurrent().getValue().in(Amps), null);
+        builder.addStringProperty("Feeder Command", () -> getCurrentCommand() != null ? getCurrentCommand().getName() : "null", null);
+        builder.addDoubleProperty("Feeder RPM", () -> motor.getVelocity().getValue().in(RPM), null);
+        builder.addDoubleProperty("Feeder Stator Current", () -> motor.getStatorCurrent().getValue().in(Amps), null);
+        builder.addDoubleProperty("Feeder Supply Current", () -> motor.getSupplyCurrent().getValue().in(Amps), null);
     }
 }

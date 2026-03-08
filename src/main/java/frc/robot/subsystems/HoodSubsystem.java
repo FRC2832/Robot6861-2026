@@ -118,8 +118,8 @@ public class HoodSubsystem extends SubsystemBase {
 
     @Override
     public void initSendable(SendableBuilder builder) {
-        builder.addStringProperty("Command", () -> getCurrentCommand() != null ? getCurrentCommand().getName() : "null", null);
-        builder.addDoubleProperty("Current Position", () -> currentPosition, null);
-        builder.addDoubleProperty("Target Position", () -> targetPosition, value -> setPosition(value));
+        builder.addStringProperty("Hood Command", () -> getCurrentCommand() != null ? getCurrentCommand().getName() : "null", null);
+        builder.addDoubleProperty("Hood Current Position", () -> currentPosition, null);
+        builder.addDoubleProperty("Hood Target Position", () -> targetPosition, value -> setPosition(value));
     }
 }

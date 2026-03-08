@@ -36,7 +36,7 @@ import frc.robot.Ports;
 public class IntakeSubsystem extends SubsystemBase {
     public enum Speed {
         STOP(0),
-        INTAKE(0.8);  // was 0.8
+        INTAKE(0.75);  // was 0.8
 
         private final double percentOutput;
 
@@ -128,9 +128,9 @@ public class IntakeSubsystem extends SubsystemBase {
             )
             .withCurrentLimits(
                 new CurrentLimitsConfigs()
-                    .withStatorCurrentLimit(Amps.of(90))
+                    .withStatorCurrentLimit(Amps.of(70))
                     .withStatorCurrentLimitEnable(true)
-                    .withSupplyCurrentLimit(Amps.of(70))
+                    .withSupplyCurrentLimit(Amps.of(60))
                     .withSupplyCurrentLimitEnable(true)
             );
         rollerMotor.getConfigurator().apply(config);
@@ -154,6 +154,10 @@ public class IntakeSubsystem extends SubsystemBase {
             pivotMotionMagicRequest
                 .withPosition(position.angle())
         );
+    }
+
+    public void seedPosition(double degrees) {
+        pivotMotor.setPosition(Degrees.of(degrees));
     }
 
     public void set(Speed speed) {
@@ -211,6 +215,7 @@ public class IntakeSubsystem extends SubsystemBase {
         builder.addDoubleProperty("RPM", () -> rollerMotor.getVelocity().getValue().in(RPM), null);
         builder.addDoubleProperty("Pivot Supply Current", () -> pivotMotor.getSupplyCurrent().getValue().in(Amps), null);
         builder.addDoubleProperty("Roller Supply Current", () -> rollerMotor.getSupplyCurrent().getValue().in(Amps), null);
+        builder.addDoubleProperty("Roller Stator Current", () -> rollerMotor.getStatorCurrent().getValue().in(Amps), null);
         builder.addDoubleProperty("Pivot Temp (F)", () -> pivotMotor.getDeviceTemp().getValue().in(Fahrenheit), null);
         builder.addDoubleProperty("Roller Temp (F)", () -> rollerMotor.getDeviceTemp().getValue().in(Fahrenheit), null);
     }

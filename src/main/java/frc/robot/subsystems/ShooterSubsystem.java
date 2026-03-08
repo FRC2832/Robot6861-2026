@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Fahrenheit;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Volts;
@@ -121,9 +122,10 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     private void initSendable(SendableBuilder builder, TalonFX motor, String name) {
-        builder.addDoubleProperty(name + " RPM", () -> motor.getVelocity().getValue().in(RPM), null);
-        builder.addDoubleProperty(name + " Stator Current", () -> motor.getStatorCurrent().getValue().in(Amps), null);
-        builder.addDoubleProperty(name + " Supply Current", () -> motor.getSupplyCurrent().getValue().in(Amps), null);
+        builder.addDoubleProperty(name + " SHooter RPM", () -> motor.getVelocity().getValue().in(RPM), null);
+        builder.addDoubleProperty(name + " Shooter Stator Current", () -> motor.getStatorCurrent().getValue().in(Amps), null);
+        builder.addDoubleProperty(name + " Shooter Supply Current", () -> motor.getSupplyCurrent().getValue().in(Amps), null);
+        builder.addDoubleProperty(name + " Shooter Temp (F)", () -> motor.getDeviceTemp().getValue().in(Fahrenheit), null);
     }
 
     @Override
@@ -131,8 +133,8 @@ public class ShooterSubsystem extends SubsystemBase {
         initSendable(builder, leftMotor, "Left");
         initSendable(builder, middleMotor, "Middle");
         initSendable(builder, rightMotor, "Right");
-        builder.addStringProperty("Command", () -> getCurrentCommand() != null ? getCurrentCommand().getName() : "null", null);
-        builder.addDoubleProperty("Dashboard RPM", () -> dashboardTargetRPM, value -> dashboardTargetRPM = value);
-        builder.addDoubleProperty("Target RPM", () -> velocityRequest.getVelocityMeasure().in(RPM), null);
+        builder.addStringProperty("Shooter Command", () -> getCurrentCommand() != null ? getCurrentCommand().getName() : "null", null);
+        builder.addDoubleProperty("SHooter Dashboard RPM", () -> dashboardTargetRPM, value -> dashboardTargetRPM = value);
+        builder.addDoubleProperty("SHooter Target RPM", () -> velocityRequest.getVelocityMeasure().in(RPM), null);
     }
 }

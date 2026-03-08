@@ -50,9 +50,9 @@ public class FloorSubsystem extends SubsystemBase {
             )
             .withCurrentLimits(
                 new CurrentLimitsConfigs()
-                    .withStatorCurrentLimit(Amps.of(60))
+                    .withStatorCurrentLimit(Amps.of(80))
                     .withStatorCurrentLimitEnable(true)
-                    .withSupplyCurrentLimit(Amps.of(40))
+                    .withSupplyCurrentLimit(Amps.of(60))
                     .withSupplyCurrentLimitEnable(true)
             );
 
@@ -73,9 +73,9 @@ public class FloorSubsystem extends SubsystemBase {
 
     @Override
     public void initSendable(SendableBuilder builder) {
-        builder.addStringProperty("Command", () -> getCurrentCommand() != null ? getCurrentCommand().getName() : "null", null);
-        builder.addDoubleProperty("RPM", () -> motor.getVelocity().getValue().in(RPM), null);
-        builder.addDoubleProperty("Stator Current", () -> motor.getStatorCurrent().getValue().in(Amps), null);
-        builder.addDoubleProperty("Supply Current", () -> motor.getSupplyCurrent().getValue().in(Amps), null);
+        builder.addStringProperty("Floor Command", () -> getCurrentCommand() != null ? getCurrentCommand().getName() : "null", null);
+        builder.addDoubleProperty("Floor RPM", () -> motor.getVelocity().getValue().in(RPM), null);
+        builder.addDoubleProperty("Floor Stator Current", () -> motor.getStatorCurrent().getValue().in(Amps), null);
+        builder.addDoubleProperty("Floor Supply Current", () -> motor.getSupplyCurrent().getValue().in(Amps), null);
     }
 }

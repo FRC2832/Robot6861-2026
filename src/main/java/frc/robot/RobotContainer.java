@@ -79,6 +79,19 @@ public class RobotContainer {
             )
         );
 
+        limelightSubsystem.setDefaultCommand(
+            limelightSubsystem.run(() -> {
+                var measurement = limelightSubsystem.getMeasurement(drivetrain.getState().Pose);
+                measurement.ifPresent(m ->
+                    drivetrain.addVisionMeasurement(
+                        m.poseEstimate.pose,
+                        m.poseEstimate.timestampSeconds,
+                        m.standardDeviations
+                    )
+                );
+            })
+        );
+
         hoodSubsystem.setDefaultCommand(
             hoodSubsystem.run(() -> {
                 double joystickY = -operatorController.getRightY();
@@ -117,13 +130,11 @@ public class RobotContainer {
         driverController.leftTrigger(0.6).whileTrue(new SpeedModeCMD(this,0.4));
 
         drivetrain.registerTelemetry(logger::telemeterize);
-        
-        // BELOW IS COPIED FROM WCP
-        //limelight.setDefaultCommand(updateVisionCommand());
 
 
         // Set to a button for homing in the pit
-        //RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop())
+        RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop())
+             .onTrue(intakeSubsystem.runOnce(() -> intakeSubsystem.seedPosition(65)));
             
            // .onTrue(intakeSubsystem.homingCommand())
            // .onTrue(hangerSubsystem.homingCommand());
@@ -136,10 +147,15 @@ public class RobotContainer {
         driverController.povDown().onTrue(hangerSubsystem.positionCommand(HangerSubsystem.Position.HUNG));
 
 
+        // Intake controls
         operatorController.rightTrigger().whileTrue(intakeSubsystem.intakeCommand()); // was leftTrigger
         operatorController.start().onTrue(intakeSubsystem.homingCommand());
         operatorController.back().onTrue(intakeSubsystem.runOnce(() -> intakeSubsystem.set(IntakeSubsystem.Position.STOWED))); // was leftBumper
-        operatorController.rightBumper().whileTrue(subsystemCommands.shootManually()); // added
+        
+        // Shooter controls
+        operatorController.b().onTrue(hoodSubsystem.runOnce(() -> hoodSubsystem.setPosition(0.158)));
+        operatorController.rightBumper().whileTrue(subsystemCommands.shootManually());
+        operatorController.a().whileTrue(intakeSubsystem.agitateCommand());  
         
     }
 
