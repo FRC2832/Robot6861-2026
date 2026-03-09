@@ -103,10 +103,15 @@ public class ShooterSubsystem extends SubsystemBase {
         setPercentOutput(0.0);
     }
 
+    public Command reverseCommand() {
+        return startEnd(() -> setPercentOutput(-0.3), () -> stop());
+    }
+
     public Command spinUpCommand(double rpm) {
         return runOnce(() -> setRPM(rpm))
             .andThen(Commands.waitUntil(this::isVelocityWithinTolerance));
     }
+
 
     public Command dashboardSpinUpCommand() {
         return defer(() -> spinUpCommand(dashboardTargetRPM)); 
