@@ -13,8 +13,8 @@ public final class Ports {
 
     // Talon FX IDs
     public static final int kIntakePivot = 3; // Possibly Intake/Deploy
-    public static final int kIntakeRollers = 5; // Indexer/Hopper
-    public static final int kFloor = 4; // We think this is Intake Fuel
+    public static final int kIntakeRollers = 4; // Indexer/Hopper
+    public static final int kFloor = 5; // floor is what they call Hopper. TODO: change floor refs to Hopper
     public static final int kFeeder = 6; // Possibly Indexer/Shooter
     public static final int kShooterLeft = 9;
     public static final int kShooterMiddle = 8;
@@ -24,4 +24,7 @@ public final class Ports {
     // PWM Ports
     public static final int kHoodLeftServo = 3;
     public static final int kHoodRightServo = 4;
+
+    // Servo IDs
+    public static final int kHoodServoHub = 2; 
 }

@@ -9,6 +9,8 @@ import static edu.wpi.first.units.Units.*;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -45,6 +47,8 @@ public class RobotContainer {
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
+    private UsbCamera driverCam;
+
     private final CommandXboxController driverController = new CommandXboxController(0);
     private final CommandXboxController operatorController = new CommandXboxController(1);
 
@@ -79,6 +83,31 @@ public class RobotContainer {
             )
         );
 
+        // limelightSubsystem.setDefaultCommand(
+           // limelightSubsystem.run(() -> {
+             //   var measurement = limelightSubsystem.getMeasurement(drivetrain.getState().Pose);
+               // measurement.ifPresent(m ->
+                 //   drivetrain.addVisionMeasurement(
+                   //     m.poseEstimate.pose,
+                     //   m.poseEstimate.timestampSeconds,
+                       // m.standardDeviations
+                    //)
+               // );
+           // })
+        //);
+
+        shooterSubsystem.setDefaultCommand(shooterSubsystem.idleCommand());
+
+        hoodSubsystem.setDefaultCommand(
+            hoodSubsystem.run(() -> {
+                double joystickY = -operatorController.getRightY();
+                if (Math.abs(joystickY) > 0.1) {
+                    hoodSubsystem.setPosition(hoodSubsystem.targetPosition + joystickY *0.005);
+                }  
+            }
+            )
+        );
+
         // Idle while the robot is disabled. This ensures the configured
         // neutral mode is applied to the drive motors while disabled.
         final var idle = new SwerveRequest.Idle();
@@ -86,7 +115,14 @@ public class RobotContainer {
             drivetrain.applyRequest(() -> idle).ignoringDisable(true)
         );
 
-        driverController.a().whileTrue(drivetrain.applyRequest(() -> brake));
+        // Boilerplate code to start the camera server
+        
+        driverCam = CameraServer.startAutomaticCapture("Driver Cam", 0);
+        driverCam.setResolution(640, 480);
+        driverCam.setFPS(20);
+
+
+        driverController.y().whileTrue(drivetrain.applyRequest(() -> brake));
         driverController.b().whileTrue(drivetrain.applyRequest(() ->
             point.withModuleDirection(new Rotation2d(-driverController.getLeftY(), -driverController.getLeftX()))
         ));
@@ -108,28 +144,45 @@ public class RobotContainer {
         driverController.leftTrigger(0.6).whileTrue(new SpeedModeCMD(this,0.4));
 
         drivetrain.registerTelemetry(logger::telemeterize);
-        
-        // BELOW IS COPIED FROM WCP
-        //limelight.setDefaultCommand(updateVisionCommand());
 
+
+        // Set to a button for homing in the pit
         RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop())
-            .onTrue(Commands.sequence(
-                //hangerSubsystem.homingCommand(),
-                //intakeSubsystem.homingCommand()  // may need to increase current for both
-                
-            )); //TODO: make parallel again
+             .onTrue(intakeSubsystem.runOnce(() -> intakeSubsystem.seedPosition(65)));
+            
+           // .onTrue(intakeSubsystem.homingCommand())
+           // .onTrue(hangerSubsystem.homingCommand());
 
-            // Original parallel
-            //.onTrue(intakeSubsystem.homingCommand())
-            //.onTrue(hangerSubsystem.homingCommand());
-
-        //driverController.rightTrigger().whileTrue(subsystemCommands.aimAndShoot());
+        driverController.rightTrigger().whileTrue(subsystemCommands.aimAndShoot());
         driverController.rightBumper().whileTrue(subsystemCommands.shootManually());
-        operatorController.leftTrigger().whileTrue(intakeSubsystem.intakeCommand());
-        operatorController.leftBumper().onTrue(intakeSubsystem.runOnce(() -> intakeSubsystem.set(IntakeSubsystem.Position.STOWED)));
 
+        //Sweet Spot
+        driverController.x().whileTrue(subsystemCommands.sweetSpot());
+        
         driverController.povUp().onTrue(hangerSubsystem.positionCommand(HangerSubsystem.Position.HANGING));
         driverController.povDown().onTrue(hangerSubsystem.positionCommand(HangerSubsystem.Position.HUNG));
+
+
+        // Intake controls
+        operatorController.rightTrigger().whileTrue(intakeSubsystem.intakeCommand()); // was leftTrigger
+        operatorController.start().onTrue(intakeSubsystem.homingCommand());
+        operatorController.back().onTrue(intakeSubsystem.runOnce(() -> intakeSubsystem.set(IntakeSubsystem.Position.STOWED))); // was leftBumper
+        
+        // Shooter controls
+        operatorController.b().onTrue(hoodSubsystem.runOnce(() -> hoodSubsystem.setPosition(0.158)));
+        operatorController.rightBumper().whileTrue(subsystemCommands.shootManually());
+
+        //Sweet Spot
+        operatorController.x().whileTrue(subsystemCommands.sweetSpot());
+        operatorController.leftBumper().whileTrue(subsystemCommands.reverseDeliver());
+        
+
+        operatorController.a().whileTrue(intakeSubsystem.agitateCommand());
+
+        // Shooter RPM tuning
+        operatorController.povUp().onTrue(shooterSubsystem.runOnce(shooterSubsystem::incrementTargetRPM));
+        operatorController.povDown().onTrue(shooterSubsystem.runOnce(shooterSubsystem::decrementTargetRPM));  
+        
     }
 
     // THIS METHOD IS COPIED FROM WCP

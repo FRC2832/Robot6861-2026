@@ -23,7 +23,8 @@ import frc.robot.Ports;
 public class FloorSubsystem extends SubsystemBase {
     public enum Speed {
         STOP(0),
-        FEED(0.83);
+        FEED(0.83),
+        REVERSEFEED(-0.3);
 
         private final double percentOutput;
 
@@ -50,9 +51,9 @@ public class FloorSubsystem extends SubsystemBase {
             )
             .withCurrentLimits(
                 new CurrentLimitsConfigs()
-                    .withStatorCurrentLimit(Amps.of(60))
+                    .withStatorCurrentLimit(Amps.of(80))
                     .withStatorCurrentLimitEnable(true)
-                    .withSupplyCurrentLimit(Amps.of(40))
+                    .withSupplyCurrentLimit(Amps.of(60))
                     .withSupplyCurrentLimitEnable(true)
             );
 
@@ -71,11 +72,15 @@ public class FloorSubsystem extends SubsystemBase {
         return startEnd(() -> set(Speed.FEED), () -> set(Speed.STOP));
     }
 
+    public Command reverseFeedCommand() {
+        return startEnd(() -> set(Speed.REVERSEFEED), () -> set(Speed.STOP));
+    }
+
     @Override
     public void initSendable(SendableBuilder builder) {
-        builder.addStringProperty("Command", () -> getCurrentCommand() != null ? getCurrentCommand().getName() : "null", null);
-        builder.addDoubleProperty("RPM", () -> motor.getVelocity().getValue().in(RPM), null);
-        builder.addDoubleProperty("Stator Current", () -> motor.getStatorCurrent().getValue().in(Amps), null);
-        builder.addDoubleProperty("Supply Current", () -> motor.getSupplyCurrent().getValue().in(Amps), null);
+        builder.addStringProperty("Floor Command", () -> getCurrentCommand() != null ? getCurrentCommand().getName() : "null", null);
+        builder.addDoubleProperty("Floor RPM", () -> motor.getVelocity().getValue().in(RPM), null);
+        builder.addDoubleProperty("Floor Stator Current", () -> motor.getStatorCurrent().getValue().in(Amps), null);
+        builder.addDoubleProperty("Floor Supply Current", () -> motor.getSupplyCurrent().getValue().in(Amps), null);
     }
 }

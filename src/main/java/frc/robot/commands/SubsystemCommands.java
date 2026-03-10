@@ -87,6 +87,25 @@ public final class SubsystemCommands {
             .handleInterrupt(() -> shooter.stop());
     }
 
+
+    public Command sweetSpot() {
+        return Commands.parallel(
+            hood.runOnce(() -> hood.setPosition(0.21)), // was 0.19
+            shooter.spinUpCommand(4750) //was 5000rpm
+        )
+        .andThen(feed())
+        .handleInterrupt(() -> shooter.stop());
+    }
+
+
+    public Command reverseDeliver() {
+        return Commands.parallel(
+            shooter.reverseCommand(),
+            feeder.reverseFeedCommand(),
+            floor.reverseFeedCommand()
+        );
+    }
+
     private Command feed() {
         return Commands.sequence(
             Commands.waitSeconds(0.25),

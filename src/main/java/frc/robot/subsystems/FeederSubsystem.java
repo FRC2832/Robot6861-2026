@@ -29,7 +29,8 @@ import frc.robot.Ports;
 
 public class FeederSubsystem extends SubsystemBase {
     public enum Speed {
-        FEED(5000);
+        FEED(5000),
+        REVERSEFEED(-2000);
 
         private final double rpm;
 
@@ -57,7 +58,7 @@ public class FeederSubsystem extends SubsystemBase {
             )
             .withCurrentLimits(
                 new CurrentLimitsConfigs()
-                    .withStatorCurrentLimit(Amps.of(100))
+                    .withStatorCurrentLimit(Amps.of(80))
                     .withStatorCurrentLimitEnable(true)
                     .withSupplyCurrentLimit(Amps.of(60))
                     .withSupplyCurrentLimitEnable(true)
@@ -92,11 +93,15 @@ public class FeederSubsystem extends SubsystemBase {
         return startEnd(() -> set(Speed.FEED), () -> setPercentOutput(0));
     }
 
+    public Command reverseFeedCommand() {
+        return startEnd(() -> set(Speed.REVERSEFEED), () -> setPercentOutput(0));
+    }
+
     @Override
     public void initSendable(SendableBuilder builder) {
-        builder.addStringProperty("Command", () -> getCurrentCommand() != null ? getCurrentCommand().getName() : "null", null);
-        builder.addDoubleProperty("RPM", () -> motor.getVelocity().getValue().in(RPM), null);
-        builder.addDoubleProperty("Stator Current", () -> motor.getStatorCurrent().getValue().in(Amps), null);
-        builder.addDoubleProperty("Supply Current", () -> motor.getSupplyCurrent().getValue().in(Amps), null);
+        builder.addStringProperty("Feeder Command", () -> getCurrentCommand() != null ? getCurrentCommand().getName() : "null", null);
+        builder.addDoubleProperty("Feeder RPM", () -> motor.getVelocity().getValue().in(RPM), null);
+        builder.addDoubleProperty("Feeder Stator Current", () -> motor.getStatorCurrent().getValue().in(Amps), null);
+        builder.addDoubleProperty("Feeder Supply Current", () -> motor.getSupplyCurrent().getValue().in(Amps), null);
     }
 }
