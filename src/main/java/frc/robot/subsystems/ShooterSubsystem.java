@@ -37,6 +37,8 @@ public class ShooterSubsystem extends SubsystemBase {
     private final VoltageOut voltageRequest = new VoltageOut(0);
 
     private double dashboardTargetRPM = 5000.0; // was 4000.0
+    private double idleRPM = 1500.0;
+    private double rpmStep = 50.0;
 
     public ShooterSubsystem() {
         leftMotor = new TalonFX(Ports.kShooterLeft, Ports.kCANivoreCANBus);
@@ -114,7 +116,19 @@ public class ShooterSubsystem extends SubsystemBase {
 
 
     public Command dashboardSpinUpCommand() {
-        return defer(() -> spinUpCommand(dashboardTargetRPM)); 
+        return defer(() -> spinUpCommand(dashboardTargetRPM));
+    }
+
+    public Command idleCommand() {
+        return run(() -> setRPM(idleRPM));
+    }
+
+    public void incrementTargetRPM() {
+        dashboardTargetRPM += rpmStep;
+    }
+
+    public void decrementTargetRPM() {
+        dashboardTargetRPM = Math.max(0, dashboardTargetRPM - rpmStep);
     }
 
     public boolean isVelocityWithinTolerance() {
@@ -141,5 +155,7 @@ public class ShooterSubsystem extends SubsystemBase {
         builder.addStringProperty("Shooter Command", () -> getCurrentCommand() != null ? getCurrentCommand().getName() : "null", null);
         builder.addDoubleProperty("SHooter Dashboard RPM", () -> dashboardTargetRPM, value -> dashboardTargetRPM = value);
         builder.addDoubleProperty("SHooter Target RPM", () -> velocityRequest.getVelocityMeasure().in(RPM), null);
+        builder.addDoubleProperty("Shooter Idle RPM", () -> idleRPM, value -> idleRPM = value);
+        builder.addDoubleProperty("Shooter RPM Step", () -> rpmStep, value -> rpmStep = value);
     }
 }

@@ -90,8 +90,8 @@ public final class SubsystemCommands {
 
     public Command sweetSpot() {
         return Commands.parallel(
-            hood.runOnce(() -> hood.setPosition(0.19)),
-            shooter.spinUpCommand(5000)
+            hood.runOnce(() -> hood.setPosition(0.21)), // was 0.19
+            shooter.spinUpCommand(4750) //was 5000rpm
         )
         .andThen(feed())
         .handleInterrupt(() -> shooter.stop());

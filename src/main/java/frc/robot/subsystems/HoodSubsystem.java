@@ -68,7 +68,7 @@ public class HoodSubsystem extends SubsystemBase {
             run(() -> {
                 double joystickY = -operatorController.getRightY();
                 if (Math.abs(joystickY) > 0.1) {
-                    this.setPosition(targetPosition + joystickY * 0.005);
+                    this.setPosition(targetPosition + joystickY * 0.0085); //was 0.005
                 }
             })
         );

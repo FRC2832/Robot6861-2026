@@ -96,6 +96,8 @@ public class RobotContainer {
            // })
         //);
 
+        shooterSubsystem.setDefaultCommand(shooterSubsystem.idleCommand());
+
         hoodSubsystem.setDefaultCommand(
             hoodSubsystem.run(() -> {
                 double joystickY = -operatorController.getRightY();
@@ -151,7 +153,7 @@ public class RobotContainer {
            // .onTrue(intakeSubsystem.homingCommand())
            // .onTrue(hangerSubsystem.homingCommand());
 
-        //driverController.rightTrigger().whileTrue(subsystemCommands.aimAndShoot());
+        driverController.rightTrigger().whileTrue(subsystemCommands.aimAndShoot());
         driverController.rightBumper().whileTrue(subsystemCommands.shootManually());
 
         //Sweet Spot
@@ -175,7 +177,11 @@ public class RobotContainer {
         operatorController.leftBumper().whileTrue(subsystemCommands.reverseDeliver());
         
 
-        operatorController.a().whileTrue(intakeSubsystem.agitateCommand());  
+        operatorController.a().whileTrue(intakeSubsystem.agitateCommand());
+
+        // Shooter RPM tuning
+        operatorController.povUp().onTrue(shooterSubsystem.runOnce(shooterSubsystem::incrementTargetRPM));
+        operatorController.povDown().onTrue(shooterSubsystem.runOnce(shooterSubsystem::decrementTargetRPM));  
         
     }
 
