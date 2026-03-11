@@ -58,9 +58,9 @@ public class FeederSubsystem extends SubsystemBase {
             )
             .withCurrentLimits(
                 new CurrentLimitsConfigs()
-                    .withStatorCurrentLimit(Amps.of(80))
+                    .withStatorCurrentLimit(Amps.of(60)) //was 80A
                     .withStatorCurrentLimitEnable(true)
-                    .withSupplyCurrentLimit(Amps.of(60))
+                    .withSupplyCurrentLimit(Amps.of(30)) //was 60A
                     .withSupplyCurrentLimitEnable(true)
             )
             .withSlot0(

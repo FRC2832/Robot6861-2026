@@ -39,6 +39,7 @@ public class ShooterSubsystem extends SubsystemBase {
     private double dashboardTargetRPM = 5000.0; // was 4000.0
     private double idleRPM = 1500.0;
     private double rpmStep = 50.0;
+    private boolean idleEnabled = true;
 
     public ShooterSubsystem() {
         leftMotor = new TalonFX(Ports.kShooterLeft, Ports.kCANivoreCANBus);
@@ -119,8 +120,18 @@ public class ShooterSubsystem extends SubsystemBase {
         return defer(() -> spinUpCommand(dashboardTargetRPM));
     }
 
+    public void setIdleEnabled(boolean enabled) {
+        idleEnabled = enabled;
+    }
+
     public Command idleCommand() {
-        return run(() -> setRPM(idleRPM));
+        return run(() -> {
+            if (idleEnabled) {
+                setRPM(idleRPM);
+            } else {
+                stop();
+            }
+        });
     }
 
     public void incrementTargetRPM() {
@@ -157,5 +168,6 @@ public class ShooterSubsystem extends SubsystemBase {
         builder.addDoubleProperty("SHooter Target RPM", () -> velocityRequest.getVelocityMeasure().in(RPM), null);
         builder.addDoubleProperty("Shooter Idle RPM", () -> idleRPM, value -> idleRPM = value);
         builder.addDoubleProperty("Shooter RPM Step", () -> rpmStep, value -> rpmStep = value);
+        builder.addBooleanProperty("Shooter Idle Enabled", () -> idleEnabled, value -> idleEnabled = value);
     }
 }

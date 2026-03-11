@@ -83,18 +83,20 @@ public class RobotContainer {
             )
         );
 
-        // limelightSubsystem.setDefaultCommand(
-           // limelightSubsystem.run(() -> {
-             //   var measurement = limelightSubsystem.getMeasurement(drivetrain.getState().Pose);
-               // measurement.ifPresent(m ->
-                 //   drivetrain.addVisionMeasurement(
-                   //     m.poseEstimate.pose,
-                     //   m.poseEstimate.timestampSeconds,
-                       // m.standardDeviations
-                    //)
-               // );
-           // })
-        //);
+        //  Updates vision even when disabled on field at start of match!
+        limelightSubsystem.setDefaultCommand(
+           limelightSubsystem.run(() -> {
+             var measurement = limelightSubsystem.getMeasurement(drivetrain.getState().Pose);
+             measurement.ifPresent(m ->
+                 drivetrain.addVisionMeasurement(
+                    m.poseEstimate.pose,
+                    m.poseEstimate.timestampSeconds,
+                    m.standardDeviations
+                    )
+                );
+            })
+            .ignoringDisable(true)
+        );
 
         shooterSubsystem.setDefaultCommand(shooterSubsystem.idleCommand());
 
@@ -137,6 +139,9 @@ public class RobotContainer {
         // Reset the field-centric heading on start press.
         driverController.start().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
+        // Back button disables shooter idle (pit safety)
+        driverController.back().onTrue(shooterSubsystem.runOnce(() -> shooterSubsystem.setIdleEnabled(false)));
+
         //this is turtle mode //TODO: decrease thresholds as robot speed increases
         driverController.leftTrigger(0.2).whileTrue(new SpeedModeCMD(this,0.7));
         
@@ -148,7 +153,8 @@ public class RobotContainer {
 
         // Set to a button for homing in the pit
         RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop())
-             .onTrue(intakeSubsystem.runOnce(() -> intakeSubsystem.seedPosition(65)));
+             .onTrue(intakeSubsystem.runOnce(() -> intakeSubsystem.seedPosition(65)))
+             .onTrue(shooterSubsystem.runOnce(() -> shooterSubsystem.setIdleEnabled(true)));
             
            // .onTrue(intakeSubsystem.homingCommand())
            // .onTrue(hangerSubsystem.homingCommand());
@@ -181,7 +187,16 @@ public class RobotContainer {
 
         // Shooter RPM tuning
         operatorController.povUp().onTrue(shooterSubsystem.runOnce(shooterSubsystem::incrementTargetRPM));
-        operatorController.povDown().onTrue(shooterSubsystem.runOnce(shooterSubsystem::decrementTargetRPM));  
+        operatorController.povDown().onTrue(shooterSubsystem.runOnce(shooterSubsystem::decrementTargetRPM));
+
+        // Emergency CANivore USB reset.  CTRE id 29ca-
+        operatorController.y().onTrue(Commands.runOnce(() -> {
+            try {
+                Runtime.getRuntime().exec(new String[]{"usbreset", "/dev/bus/usb/001/003"});
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).ignoringDisable(true));  
         
     }
 
