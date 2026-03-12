@@ -36,7 +36,8 @@ import frc.robot.Ports;
 public class IntakeSubsystem extends SubsystemBase {
     public enum Speed {
         STOP(0),
-        INTAKE(0.7);  // was 0.8, 0.6 was good to keep temps down
+        INTAKE(0.65), // was 0.8, 0.6 was good to keep temps down
+        REVERSEINTAKE(-0.3);
 
         private final double percentOutput;
 
@@ -52,8 +53,8 @@ public class IntakeSubsystem extends SubsystemBase {
     public enum Position {
         HOMED(75),
         STOWED(65),
-        INTAKE(-78.0), // was -4
-        AGITATE(-50);  // was 20
+        INTAKE(-12.0), // was -4, was -78 most recently
+        AGITATE(20);  // was 20, was -50 most recently
 
         private final double degrees;
 
@@ -172,6 +173,16 @@ public class IntakeSubsystem extends SubsystemBase {
             () -> {
                 set(Position.INTAKE);
                 set(Speed.INTAKE);
+            },
+            () -> set(Speed.STOP)
+        );
+    }
+
+    public Command reverseIntakeCommand() {
+        return startEnd(
+            () -> {
+                set(Position.AGITATE);
+                set(Speed.REVERSEINTAKE);
             },
             () -> set(Speed.STOP)
         );

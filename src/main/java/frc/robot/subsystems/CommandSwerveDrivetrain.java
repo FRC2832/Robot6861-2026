@@ -11,7 +11,11 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
+import choreo.Choreo.TrajectoryLogger;
+import choreo.auto.AutoFactory;
+import choreo.trajectory.SwerveSample;
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
@@ -44,6 +48,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private static final Rotation2d kRedAlliancePerspectiveRotation = Rotation2d.k180deg;
     /* Keep track if we've ever applied the operator perspective before or not */
     private boolean m_hasAppliedOperatorPerspective = false;
+
+    /** Swerve request to apply during field-centric path following */
+    private final SwerveRequest.ApplyFieldSpeeds pathFieldSpeedsRequest = new SwerveRequest.ApplyFieldSpeeds();
+    private final PIDController pathXController = new PIDController(10, 0, 0);
+    private final PIDController pathYController = new PIDController(10, 0, 0);
+    private final PIDController pathThetaController = new PIDController(7, 0, 0);
+
 
     /* Swerve requests to apply during SysId characterization */
     private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization = new SwerveRequest.SysIdSwerveTranslation();
@@ -255,6 +266,64 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         });
         m_simNotifier.startPeriodic(kSimLoopPeriod);
     }
+
+
+
+        /**
+     * Creates a new auto factory for this drivetrain.
+     *
+     * @return AutoFactory for this drivetrain
+     */
+    public AutoFactory createAutoFactory() {
+        return createAutoFactory((sample, isStart) -> {});
+    }
+
+    /**
+     * Creates a new auto factory for this drivetrain with the given
+     * trajectory logger.
+     *
+     * @param trajLogger Logger for the trajectory
+     * @return AutoFactory for this drivetrain
+     */
+    public AutoFactory createAutoFactory(TrajectoryLogger<SwerveSample> trajLogger) {
+        return new AutoFactory(
+            () -> getState().Pose,
+            this::resetPose,
+            this::followPath,
+            true,
+            this,
+            trajLogger
+        );
+    }
+
+    /**
+     * Follows the given field-centric path sample with PID.
+     *
+     * @param sample Sample along the path to follow
+     */
+    public void followPath(SwerveSample sample) {
+        pathThetaController.enableContinuousInput(-Math.PI, Math.PI);
+
+        var pose = getState().Pose;
+
+        var targetSpeeds = sample.getChassisSpeeds();
+        targetSpeeds.vxMetersPerSecond += pathXController.calculate(
+            pose.getX(), sample.x
+        );
+        targetSpeeds.vyMetersPerSecond += pathYController.calculate(
+            pose.getY(), sample.y
+        );
+        targetSpeeds.omegaRadiansPerSecond += pathThetaController.calculate(
+            pose.getRotation().getRadians(), sample.heading
+        );
+
+        setControl(
+            pathFieldSpeedsRequest.withSpeeds(targetSpeeds)
+                .withWheelForceFeedforwardsX(sample.moduleForcesX())
+                .withWheelForceFeedforwardsY(sample.moduleForcesY())
+        );
+    }
+
 
     /**
      * Adds a vision measurement to the Kalman Filter. This will correct the odometry pose estimate

@@ -5,6 +5,7 @@
 package frc.robot;
 
 import com.ctre.phoenix6.HootAutoReplay;
+import com.ctre.phoenix6.SignalLogger;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -21,6 +22,7 @@ public class Robot extends TimedRobot {
         .withJoystickReplay();
 
     public Robot() {
+        //SignalLogger.setPath("/media/sda1/ctre-logs/");
         m_robotContainer = new RobotContainer();
     }
 
@@ -41,15 +43,18 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousInit() {
+        // Autonomous is now handled by AutoRoutines and the AutoChooser via RobotModeTriggers
+        /*
         m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
         if (m_autonomousCommand != null) {
             CommandScheduler.getInstance().cancel(m_autonomousCommand);
-        
+
         // Original code - figure out why it started running
         //if (m_autonomousCommand != null) {
             //CommandScheduler.getInstance().schedule(m_autonomousCommand);
         }
+        */
     }
 
     @Override

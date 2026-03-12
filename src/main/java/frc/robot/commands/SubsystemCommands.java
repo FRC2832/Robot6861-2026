@@ -98,6 +98,17 @@ public final class SubsystemCommands {
     }
 
 
+     public Command hubShot() {
+        return Commands.parallel(
+            hood.runOnce(() -> hood.setPosition(0.0)), 
+            shooter.spinUpCommand(3650) //was 3750 and very high % in the hub!
+        )
+        .andThen(feed())
+        .handleInterrupt(() -> shooter.stop());
+    }
+
+
+
     public Command reverseDeliver() {
         return Commands.parallel(
             shooter.reverseCommand(),

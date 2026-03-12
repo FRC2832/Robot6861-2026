@@ -1,0 +1,84 @@
+{
+ "name":"Robot6861-2026",
+ "version":2,
+ "type":"Swerve",
+ "variables":{
+  "expressions":{},
+  "poses":{}
+ },
+ "config":{
+  "frontLeft":{
+   "x":{
+    "exp":"10.875 in",
+    "val":0.276225
+   },
+   "y":{
+    "exp":"10.125 in",
+    "val":0.257175
+   }
+  },
+  "backLeft":{
+   "x":{
+    "exp":"-10.875 in",
+    "val":-0.276225
+   },
+   "y":{
+    "exp":"10.125 in",
+    "val":0.257175
+   }
+  },
+  "mass":{
+   "exp":"130 lbs",
+   "val":58.9670081
+  },
+  "inertia":{
+   "exp":"6 kg m ^ 2",
+   "val":6.0
+  },
+  "gearing":{
+   "exp":"6.027",
+   "val":6.027
+  },
+  "radius":{
+   "exp":"2 in",
+   "val":0.0508
+  },
+  "vmax":{
+   "exp":"4000 RPM",
+   "val":418.87902047863906
+  },
+  "tmax":{
+   "exp":"6 N * m",
+   "val":6.0
+  },
+  "cof":{
+   "exp":"1",
+   "val":1.0
+  },
+  "bumper":{
+   "front":{
+    "exp":"14.875 in",
+    "val":0.377825
+   },
+   "side":{
+    "exp":"14.125 in",
+    "val":0.358775
+   },
+   "back":{
+    "exp":"14.875 in",
+    "val":0.377825
+   }
+  },
+  "differentialTrackWidth":{
+   "exp":"22 in",
+   "val":0.5588
+  }
+ },
+ "generationFeatures":[],
+ "codegen":{
+  "root":"../../java/frc/robot/generated",
+  "genVars":true,
+  "genTrajData":true,
+  "useChoreoLib":true
+ }
+}

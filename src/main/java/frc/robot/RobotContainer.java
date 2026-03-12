@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 import frc.robot.generated.TunerConstants;
+import frc.robot.commands.AutoRoutines;
 import frc.robot.commands.SpeedModeCMD;
 import frc.robot.commands.SubsystemCommands;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -65,9 +66,14 @@ public class RobotContainer {
 
     // Command instantiation
     private final SubsystemCommands subsystemCommands = new SubsystemCommands(drivetrain, intakeSubsystem, floorSubsystem, feederSubsystem, shooterSubsystem, hoodSubsystem, hangerSubsystem);
+    private final AutoRoutines autoRoutines = new AutoRoutines(
+        drivetrain, intakeSubsystem, floorSubsystem, feederSubsystem,
+        shooterSubsystem, hoodSubsystem, hangerSubsystem, limelightSubsystem
+    );
 
     public RobotContainer() {
         configureBindings();
+        autoRoutines.configure();
     }
 
     private void configureBindings() {
@@ -119,9 +125,9 @@ public class RobotContainer {
 
         // Boilerplate code to start the camera server
         
-        driverCam = CameraServer.startAutomaticCapture("Driver Cam", 0);
-        driverCam.setResolution(640, 480);
-        driverCam.setFPS(20);
+        //driverCam = CameraServer.startAutomaticCapture("Driver Cam", 0);
+        //driverCam.setResolution(640, 480);
+        //driverCam.setFPS(20);
 
 
         driverController.y().whileTrue(drivetrain.applyRequest(() -> brake));
@@ -164,13 +170,21 @@ public class RobotContainer {
 
         //Sweet Spot
         driverController.x().whileTrue(subsystemCommands.sweetSpot());
+
+         //Hub Shot
+        driverController.leftBumper().whileTrue(subsystemCommands.hubShot());
+
         
+        
+        //CLimbing mechanism
         driverController.povUp().onTrue(hangerSubsystem.positionCommand(HangerSubsystem.Position.HANGING));
         driverController.povDown().onTrue(hangerSubsystem.positionCommand(HangerSubsystem.Position.HUNG));
 
 
         // Intake controls
         operatorController.rightTrigger().whileTrue(intakeSubsystem.intakeCommand()); // was leftTrigger
+        operatorController.leftTrigger().whileTrue(intakeSubsystem.reverseIntakeCommand());
+
         operatorController.start().onTrue(intakeSubsystem.homingCommand());
         operatorController.back().onTrue(intakeSubsystem.runOnce(() -> intakeSubsystem.set(IntakeSubsystem.Position.STOWED))); // was leftBumper
         
@@ -189,14 +203,14 @@ public class RobotContainer {
         operatorController.povUp().onTrue(shooterSubsystem.runOnce(shooterSubsystem::incrementTargetRPM));
         operatorController.povDown().onTrue(shooterSubsystem.runOnce(shooterSubsystem::decrementTargetRPM));
 
-        // Emergency CANivore USB reset.  CTRE id 29ca-
-        operatorController.y().onTrue(Commands.runOnce(() -> {
-            try {
-                Runtime.getRuntime().exec(new String[]{"usbreset", "/dev/bus/usb/001/003"});
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }).ignoringDisable(true));  
+        // Emergency CANivore USB reset.  this didn't fix our issue. LEaving it in for now. CTRE id 29ca-
+        //operatorController.y().onTrue(Commands.runOnce(() -> {
+           // try {
+           //     Runtime.getRuntime().exec(new String[]{"usbreset", "/dev/bus/usb/001/003"});
+           // } catch (Exception e) {
+           //     e.printStackTrace();
+           //}
+        //}).ignoringDisable(true));  
         
     }
 
@@ -218,6 +232,8 @@ public class RobotContainer {
     }
     */
 
+    // Autonomous is now handled by AutoRoutines and the AutoChooser on SmartDashboard
+    /*
     public Command getAutonomousCommand() {
         // Simple drive forward auton
         final var idle = new SwerveRequest.Idle();
@@ -236,6 +252,7 @@ public class RobotContainer {
             drivetrain.applyRequest(() -> idle)
         );
     }
+    */
 
     public void setSpeedMultiplier(double multiplier) {
         this.speedMultiplier = multiplier;
