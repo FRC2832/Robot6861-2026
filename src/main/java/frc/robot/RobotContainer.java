@@ -89,20 +89,20 @@ public class RobotContainer {
             )
         );
 
-        //  Updates vision even when disabled on field at start of match!
-        limelightSubsystem.setDefaultCommand(
-           limelightSubsystem.run(() -> {
-             var measurement = limelightSubsystem.getMeasurement(drivetrain.getState().Pose);
-             measurement.ifPresent(m ->
-                 drivetrain.addVisionMeasurement(
-                    m.poseEstimate.pose,
-                    m.poseEstimate.timestampSeconds,
-                    m.standardDeviations
-                    )
-                );
-            })
-            .ignoringDisable(true)
-        );
+        //  Limelight disabled to reduce CPU usage
+        // limelightSubsystem.setDefaultCommand(
+        //    limelightSubsystem.run(() -> {
+        //      var measurement = limelightSubsystem.getMeasurement(drivetrain.getState().Pose);
+        //      measurement.ifPresent(m ->
+        //          drivetrain.addVisionMeasurement(
+        //             m.poseEstimate.pose,
+        //             m.poseEstimate.timestampSeconds,
+        //             m.standardDeviations
+        //             )
+        //         );
+        //     })
+        //     .ignoringDisable(true)
+        // );
 
         shooterSubsystem.setDefaultCommand(shooterSubsystem.idleCommand());
 
@@ -165,7 +165,8 @@ public class RobotContainer {
            // .onTrue(intakeSubsystem.homingCommand())
            // .onTrue(hangerSubsystem.homingCommand());
 
-        driverController.rightTrigger().whileTrue(subsystemCommands.aimAndShoot());
+        // Aim and shoot disabled - turns wrong direction - might be due to Pigeon orientation
+        // driverController.rightTrigger().whileTrue(subsystemCommands.aimAndShoot());
         driverController.rightBumper().whileTrue(subsystemCommands.shootManually());
 
         //Sweet Spot

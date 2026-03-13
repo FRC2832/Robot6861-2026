@@ -59,9 +59,29 @@ public final class AutoRoutines {
     }
 
     public void configure() {
+        autoChooser.addRoutine("Hub Shot Auton", this::hubShotAuton);
         autoChooser.addRoutine("Hub Straight Back", this::hubStraightBackRoutine);
         SmartDashboard.putData("Auto Chooser", autoChooser);
         RobotModeTriggers.autonomous().whileTrue(autoChooser.selectedCommandScheduler());
+    }
+
+    private AutoRoutine hubShotAuton() {
+        final AutoRoutine routine = autoFactory.newRoutine("Hub Shot Auton");
+        final AutoTrajectory driveBack = HubStraightBack.asAutoTraj(routine);
+
+        routine.active().onTrue(
+            Commands.sequence(
+                // Shoot all fuel into hub
+                subsystemCommands.hubShot().withTimeout(12),
+                // Drive straight back
+                driveBack.resetOdometry(),
+                driveBack.cmd(),
+                // Raise climber arms to release hopper
+                hanger.positionCommand(HangerSubsystem.Position.EXTEND_HOPPER)
+            )
+        );
+
+        return routine;
     }
 
     private AutoRoutine hubStraightBackRoutine() {
