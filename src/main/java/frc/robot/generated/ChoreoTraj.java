@@ -27,9 +27,9 @@ public record ChoreoTraj(
     public static final ChoreoTraj HubStraightBack = new ChoreoTraj(
         "HubStraightBack",
         OptionalInt.empty(),
-        1.33806,
+        0.87423,
         new Pose2d(3.5929, 4.07358, Rotation2d.fromRadians(0)),
-        new Pose2d(1.81931, 4.07358, Rotation2d.fromRadians(0))
+        new Pose2d(2.51931, 4.07358, Rotation2d.fromRadians(0))
     );
     public static final ChoreoTraj OutpostAndDepotTrajectory = new ChoreoTraj(
         "OutpostAndDepotTrajectory",

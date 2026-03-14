@@ -72,12 +72,14 @@ public final class AutoRoutines {
         routine.active().onTrue(
             Commands.sequence(
                 // Shoot all fuel into hub
-                subsystemCommands.hubShot().withTimeout(12),
+                subsystemCommands.hubShotAuton().withTimeout(5),
                 // Drive straight back
                 driveBack.resetOdometry(),
-                driveBack.cmd(),
-                // Raise climber arms to release hopper
-                hanger.positionCommand(HangerSubsystem.Position.EXTEND_HOPPER)
+                // Drive back and raise climber arms at the same time
+                Commands.parallel(
+                    driveBack.cmd(),
+                    hanger.positionCommand(HangerSubsystem.Position.EXTEND_HOPPER)
+                )
             )
         );
 

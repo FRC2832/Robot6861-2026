@@ -98,7 +98,7 @@ public final class SubsystemCommands {
     }
 
 
-     public Command hubShot() {
+    public Command hubShot() {
         return Commands.parallel(
             hood.runOnce(() -> hood.setPosition(0.0)), 
             shooter.spinUpCommand(3650) //was 3750 and very high % in the hub!
@@ -107,6 +107,14 @@ public final class SubsystemCommands {
         .handleInterrupt(() -> shooter.stop());
     }
 
+    public Command hubShotAuton() {
+        return Commands.parallel(
+            hood.runOnce(() -> hood.setPosition(0.0)), 
+            shooter.spinUpCommand(3650) //was 3750 and very high % in the hub!
+        )
+        .andThen(feedAuton())
+        .handleInterrupt(() -> shooter.stop());
+    }
 
 
     public Command reverseDeliver() {
@@ -124,6 +132,17 @@ public final class SubsystemCommands {
                 feeder.feedCommand(),
                 Commands.waitSeconds(0.125)
                     .andThen(floor.feedCommand().alongWith(intake.agitateCommand()))
+            )
+        );
+    }
+    //No agitation for auton feed to prevent jamming on the way out of the hub
+    private Command feedAuton() {
+        return Commands.sequence(
+            Commands.waitSeconds(0.25),
+            Commands.parallel(
+                feeder.feedCommand(),
+                Commands.waitSeconds(0.125)
+                    .andThen(floor.feedCommand())
             )
         );
     }
