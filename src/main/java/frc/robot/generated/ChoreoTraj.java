@@ -70,6 +70,20 @@ public record ChoreoTraj(
         new Pose2d(2.49839, 4.03528, Rotation2d.fromRadians(0)),
         new Pose2d(0.94136, 3.56436, Rotation2d.fromRadians(3.14159))
     );
+    public static final ChoreoTraj CornerHubtoCenter = new ChoreoTraj(
+        "CornerHubtoCenter",
+        OptionalInt.empty(),
+        3.07905,
+        new Pose2d(3.84627, 4.79471, Rotation2d.fromRadians(-0.5236)),
+        new Pose2d(6.1266, 4.85318, Rotation2d.fromRadians(-1.72345))
+    );
+    public static final ChoreoTraj CornerHuboverBump = new ChoreoTraj(
+        "CornerHuboverBump",
+        OptionalInt.empty(),
+        3.07905,
+        new Pose2d(3.84627, 4.79471, Rotation2d.fromRadians(-0.5236)),
+        new Pose2d(6.1266, 4.85318, Rotation2d.fromRadians(-1.72345))
+    );
 
     /**
      * A map between trajectory names and their corresponding data.
@@ -81,7 +95,9 @@ public record ChoreoTraj(
         Map.entry("OutpostAndDepotTrajectory$0", OutpostAndDepotTrajectory$0),
         Map.entry("OutpostAndDepotTrajectory$1", OutpostAndDepotTrajectory$1),
         Map.entry("OutpostAndDepotTrajectory$2", OutpostAndDepotTrajectory$2),
-        Map.entry("OutpostAndDepotTrajectory$3", OutpostAndDepotTrajectory$3)
+        Map.entry("OutpostAndDepotTrajectory$3", OutpostAndDepotTrajectory$3),
+        Map.entry("CornerHubtoCenter", CornerHubtoCenter),
+        Map.entry("CornerHuboverBump", CornerHuboverBump)
     );
 
     /**
