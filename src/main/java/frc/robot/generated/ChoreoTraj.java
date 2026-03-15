@@ -24,12 +24,12 @@ public record ChoreoTraj(
     Pose2d initialPoseBlue,
     Pose2d endPoseBlue
 ) {
-    public static final ChoreoTraj HubStraightBack = new ChoreoTraj(
-        "HubStraightBack",
+    public static final ChoreoTraj HubShortStraightBack = new ChoreoTraj(
+        "HubShortStraightBack",
         OptionalInt.empty(),
-        0.87423,
+        0.7706,
         new Pose2d(3.5929, 4.07358, Rotation2d.fromRadians(0)),
-        new Pose2d(2.51931, 4.07358, Rotation2d.fromRadians(0))
+        new Pose2d(2.83099, 4.07358, Rotation2d.fromRadians(3.14159))
     );
     public static final ChoreoTraj OutpostAndDepotTrajectory = new ChoreoTraj(
         "OutpostAndDepotTrajectory",
@@ -70,19 +70,54 @@ public record ChoreoTraj(
         new Pose2d(2.49839, 4.03528, Rotation2d.fromRadians(0)),
         new Pose2d(0.94136, 3.56436, Rotation2d.fromRadians(3.14159))
     );
-    public static final ChoreoTraj CornerHubtoCenter = new ChoreoTraj(
-        "CornerHubtoCenter",
+    public static final ChoreoTraj CenterPickup = new ChoreoTraj(
+        "CenterPickup",
         OptionalInt.empty(),
-        3.07905,
-        new Pose2d(3.84627, 4.79471, Rotation2d.fromRadians(-0.5236)),
+        1.58778,
+        new Pose2d(7.84172, 6.91912, Rotation2d.fromRadians(-1.6263)),
         new Pose2d(6.1266, 4.85318, Rotation2d.fromRadians(-1.72345))
     );
-    public static final ChoreoTraj CornerHuboverBump = new ChoreoTraj(
-        "CornerHuboverBump",
+    public static final ChoreoTraj NoMove = new ChoreoTraj(
+        "NoMove",
         OptionalInt.empty(),
-        3.07905,
+        0.57969,
+        new Pose2d(3.5929, 2.7858, Rotation2d.fromRadians(0)),
+        new Pose2d(3.47101, 2.1656, Rotation2d.fromRadians(0))
+    );
+    public static final ChoreoTraj HubLongStraightBack = new ChoreoTraj(
+        "HubLongStraightBack",
+        OptionalInt.empty(),
+        1.40495,
+        new Pose2d(3.5929, 4.07358, Rotation2d.fromRadians(0)),
+        new Pose2d(1.71931, 4.07358, Rotation2d.fromRadians(3.14159))
+    );
+    public static final ChoreoTraj HubtoDepot = new ChoreoTraj(
+        "HubtoDepot",
+        OptionalInt.empty(),
+        5.94426,
+        new Pose2d(3.53099, 4.07358, Rotation2d.fromRadians(0)),
+        new Pose2d(2.87246, 3.1917, Rotation2d.fromRadians(-3.14159))
+    );
+    public static final ChoreoTraj HubShort2Bump = new ChoreoTraj(
+        "HubShort2Bump",
+        OptionalInt.empty(),
+        2.82513,
+        new Pose2d(3.5929, 4.07358, Rotation2d.fromRadians(0)),
+        new Pose2d(5.90801, 5.84246, Rotation2d.fromRadians(0))
+    );
+    public static final ChoreoTraj Bump2Center = new ChoreoTraj(
+        "Bump2Center",
+        OptionalInt.empty(),
+        2.82513,
+        new Pose2d(3.5929, 4.07358, Rotation2d.fromRadians(0)),
+        new Pose2d(5.90801, 5.84246, Rotation2d.fromRadians(0))
+    );
+    public static final ChoreoTraj CornerHubBump = new ChoreoTraj(
+        "CornerHubBump",
+        OptionalInt.empty(),
+        1.71043,
         new Pose2d(3.84627, 4.79471, Rotation2d.fromRadians(-0.5236)),
-        new Pose2d(6.1266, 4.85318, Rotation2d.fromRadians(-1.72345))
+        new Pose2d(7.84172, 6.91912, Rotation2d.fromRadians(-1.6263))
     );
 
     /**
@@ -90,14 +125,19 @@ public record ChoreoTraj(
      * This allows for trajectory data to be looked up with strings during runtime.
      */
     public static final Map<String, ChoreoTraj> ALL_TRAJECTORIES = Map.ofEntries(
-        Map.entry("HubStraightBack", HubStraightBack),
+        Map.entry("HubShortStraightBack", HubShortStraightBack),
         Map.entry("OutpostAndDepotTrajectory", OutpostAndDepotTrajectory),
         Map.entry("OutpostAndDepotTrajectory$0", OutpostAndDepotTrajectory$0),
         Map.entry("OutpostAndDepotTrajectory$1", OutpostAndDepotTrajectory$1),
         Map.entry("OutpostAndDepotTrajectory$2", OutpostAndDepotTrajectory$2),
         Map.entry("OutpostAndDepotTrajectory$3", OutpostAndDepotTrajectory$3),
-        Map.entry("CornerHubtoCenter", CornerHubtoCenter),
-        Map.entry("CornerHuboverBump", CornerHuboverBump)
+        Map.entry("CenterPickup", CenterPickup),
+        Map.entry("NoMove", NoMove),
+        Map.entry("HubLongStraightBack", HubLongStraightBack),
+        Map.entry("HubtoDepot", HubtoDepot),
+        Map.entry("HubShort2Bump", HubShort2Bump),
+        Map.entry("Bump2Center", Bump2Center),
+        Map.entry("CornerHubBump", CornerHubBump)
     );
 
     /**

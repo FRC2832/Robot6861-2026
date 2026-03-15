@@ -98,6 +98,20 @@ public final class SubsystemCommands {
     }
 
 
+    public Command snowPlow() {
+        return Commands.parallel(
+            hood.runOnce(() -> hood.setPosition(0.75)),
+            shooter.spinUpCommand(4750), //was 5000rpm
+            Commands.waitSeconds(0.5)
+                .andThen(Commands.parallel(
+                    intake.intakeCommand(),
+                    floor.feedCommand(),
+                    feeder.feedCommand()
+                ))
+        )
+        .handleInterrupt(() -> shooter.stop());
+    }
+
     public Command hubShot() {
         return Commands.parallel(
             hood.runOnce(() -> hood.setPosition(0.0)), 
@@ -135,6 +149,14 @@ public final class SubsystemCommands {
             )
         );
     }
+    // Brief reverse of feeder and floor to prevent jamming on release
+    public Command briefReverse() {
+        return Commands.parallel(
+            feeder.reverseFeedCommand(),
+            floor.reverseFeedCommand()
+        ).withTimeout(0.25);
+    }
+
     //No agitation for auton feed to prevent jamming on the way out of the hub
     private Command feedAuton() {
         return Commands.sequence(

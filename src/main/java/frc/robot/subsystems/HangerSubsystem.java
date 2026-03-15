@@ -40,7 +40,7 @@ import frc.robot.Ports;
 public class HangerSubsystem extends SubsystemBase {
     public enum Position {
         HOMED(0),
-        EXTEND_HOPPER(2),
+        EXTEND_HOPPER(3.5),
         HANGING(6),
         HUNG(0.2);
 

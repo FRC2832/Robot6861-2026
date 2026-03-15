@@ -125,9 +125,9 @@ public class RobotContainer {
 
         // Boilerplate code to start the camera server
         
-        //driverCam = CameraServer.startAutomaticCapture("Driver Cam", 0);
-        //driverCam.setResolution(640, 480);
-        //driverCam.setFPS(20);
+        driverCam = CameraServer.startAutomaticCapture("Driver Cam", 0);
+        driverCam.setResolution(640, 480);
+        driverCam.setFPS(20);
 
 
         driverController.y().whileTrue(drivetrain.applyRequest(() -> brake));
@@ -167,18 +167,24 @@ public class RobotContainer {
 
         // Aim and shoot disabled - turns wrong direction - might be due to Pigeon orientation
         // driverController.rightTrigger().whileTrue(subsystemCommands.aimAndShoot());
-        driverController.rightBumper().whileTrue(subsystemCommands.shootManually());
+        driverController.rightBumper().whileTrue(subsystemCommands.shootManually())
+            .onFalse(subsystemCommands.briefReverse());
 
         //Sweet Spot
-        driverController.x().whileTrue(subsystemCommands.sweetSpot());
+        driverController.x().whileTrue(subsystemCommands.sweetSpot())
+            .onFalse(subsystemCommands.briefReverse());
 
          //Hub Shot
-        driverController.leftBumper().whileTrue(subsystemCommands.hubShot());
+        driverController.leftBumper().whileTrue(subsystemCommands.hubShot())
+            .onFalse(subsystemCommands.briefReverse());
 
         
         
         //CLimbing mechanism
-        driverController.povUp().onTrue(hangerSubsystem.positionCommand(HangerSubsystem.Position.HANGING));
+        //TODO: uncomment for hanging when climber meets perimeter rules  
+        //driverController.povUp().onTrue(hangerSubsystem.positionCommand(HangerSubsystem.Position.HANGING));
+        driverController.povUp().onTrue(hangerSubsystem.positionCommand(HangerSubsystem.Position.EXTEND_HOPPER));
+        
         driverController.povDown().onTrue(hangerSubsystem.positionCommand(HangerSubsystem.Position.HUNG));
 
 
@@ -187,17 +193,23 @@ public class RobotContainer {
         operatorController.leftTrigger().whileTrue(intakeSubsystem.reverseIntakeCommand());
 
         operatorController.start().onTrue(intakeSubsystem.homingCommand());
-        operatorController.back().onTrue(intakeSubsystem.runOnce(() -> intakeSubsystem.set(IntakeSubsystem.Position.STOWED))); // was leftBumper
+        operatorController.back().onTrue(intakeSubsystem.runOnce(() -> intakeSubsystem.set(IntakeSubsystem.Position.INTAKE))); // was leftBumper
         
         // Shooter controls
         operatorController.b().onTrue(hoodSubsystem.runOnce(() -> hoodSubsystem.setPosition(0.158)));
-        operatorController.rightBumper().whileTrue(subsystemCommands.shootManually());
+        operatorController.rightBumper().whileTrue(subsystemCommands.shootManually())
+            .onFalse(subsystemCommands.briefReverse());
 
-        //Sweet Spot
-        operatorController.x().whileTrue(subsystemCommands.sweetSpot());
+        // Sweet Spot
+        operatorController.x().whileTrue(subsystemCommands.sweetSpot())
+            .onFalse(subsystemCommands.briefReverse());
         operatorController.leftBumper().whileTrue(subsystemCommands.reverseDeliver());
+
+        // Snowplow
+        operatorController.y().whileTrue(subsystemCommands.snowPlow());
         
 
+        // Agitate command
         operatorController.a().whileTrue(intakeSubsystem.agitateCommand());
 
         // Shooter RPM tuning

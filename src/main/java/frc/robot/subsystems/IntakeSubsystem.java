@@ -36,7 +36,7 @@ import frc.robot.Ports;
 public class IntakeSubsystem extends SubsystemBase {
     public enum Speed {
         STOP(0),
-        INTAKE(0.65), // was 0.8, 0.6 was good to keep temps down
+        INTAKE(0.8), // was 0.8, 0.6 was good to keep temps down
         REVERSEINTAKE(-0.3);
 
         private final double percentOutput;
@@ -67,7 +67,7 @@ public class IntakeSubsystem extends SubsystemBase {
         }
     }
 
-    private static final double kPivotReduction = 50.0; //was 50
+    private static final double kPivotReduction = 75.0; //was 50
     private static final AngularVelocity kMaxPivotSpeed = KrakenX60.kFreeSpeed.div(kPivotReduction);
     private static final Angle kPositionTolerance = Degrees.of(5);
 
@@ -223,6 +223,7 @@ public class IntakeSubsystem extends SubsystemBase {
     public void initSendable(SendableBuilder builder) {
         builder.addStringProperty("Command", () -> getCurrentCommand() != null ? getCurrentCommand().getName() : "null", null);
         builder.addDoubleProperty("Angle (degrees)", () -> pivotMotor.getPosition().getValue().in(Degrees), null);
+        builder.addDoubleProperty("Speed (rpm)", () -> pivotMotor.getVelocity().getValue().in(RPM), null);
         builder.addDoubleProperty("RPM", () -> rollerMotor.getVelocity().getValue().in(RPM), null);
         builder.addDoubleProperty("Pivot Supply Current", () -> pivotMotor.getSupplyCurrent().getValue().in(Amps), null);
         builder.addDoubleProperty("Roller Supply Current", () -> rollerMotor.getSupplyCurrent().getValue().in(Amps), null);

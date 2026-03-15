@@ -7,8 +7,10 @@ package frc.robot;
 import com.ctre.phoenix6.HootAutoReplay;
 import com.ctre.phoenix6.SignalLogger;
 
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.util.Elastic;
@@ -19,12 +21,19 @@ public class Robot extends TimedRobot {
     private final RobotContainer m_robotContainer;
 
     // Teleop phase timer - notifications at 10, 35, 60, 85, 110 seconds
+    // Rumble 4 seconds before each phase change
     private final Timer teleopTimer = new Timer();
     private int nextPhaseIndex = 0;
+    private int nextRumbleIndex = 0;
     private static final double[] PHASE_TIMES = {10, 35, 60, 85, 110};
+    private static final double[] RUMBLE_TIMES = {6, 31, 56, 81, 106};
     private static final String[] PHASE_MESSAGES = {
         "PHASE CHANGE", "PHASE CHANGE", "PHASE CHANGE", "PHASE CHANGE", "ENDGAME"
     };
+    private final XboxController driverController = new XboxController(0);
+    private final XboxController operatorController = new XboxController(1);
+    private boolean rumbleActive = false;
+    private double rumbleStartTime = 0;
 
     /* log and replay timestamp and joystick data */
     private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
@@ -81,10 +90,30 @@ public class Robot extends TimedRobot {
         teleopTimer.reset();
         teleopTimer.start();
         nextPhaseIndex = 0;
+        nextRumbleIndex = 0;
+        rumbleActive = false;
     }
 
     @Override
     public void teleopPeriodic() {
+        // Rumble 4 seconds before phase change
+        if (nextRumbleIndex < RUMBLE_TIMES.length
+                && teleopTimer.hasElapsed(RUMBLE_TIMES[nextRumbleIndex])) {
+            driverController.setRumble(RumbleType.kBothRumble, 1.0);
+            operatorController.setRumble(RumbleType.kBothRumble, 1.0);
+            rumbleActive = true;
+            rumbleStartTime = teleopTimer.get();
+            nextRumbleIndex++;
+        }
+
+        // Stop rumble after 1 second
+        if (rumbleActive && teleopTimer.get() - rumbleStartTime >= 1.0) {
+            driverController.setRumble(RumbleType.kBothRumble, 0);
+            operatorController.setRumble(RumbleType.kBothRumble, 0);
+            rumbleActive = false;
+        }
+
+        // Send notification at phase change
         if (nextPhaseIndex < PHASE_TIMES.length
                 && teleopTimer.hasElapsed(PHASE_TIMES[nextPhaseIndex])) {
             Elastic.NotificationLevel level = nextPhaseIndex == 4
@@ -96,7 +125,10 @@ public class Robot extends TimedRobot {
     }
 
     @Override
-    public void teleopExit() {}
+    public void teleopExit() {
+        driverController.setRumble(RumbleType.kBothRumble, 0);
+        operatorController.setRumble(RumbleType.kBothRumble, 0);
+    }
 
     @Override
     public void testInit() {
