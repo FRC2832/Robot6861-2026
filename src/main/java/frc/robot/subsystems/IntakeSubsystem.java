@@ -53,7 +53,7 @@ public class IntakeSubsystem extends SubsystemBase {
     public enum Position {
         HOMED(75),
         STOWED(65),
-        INTAKE(-12.0), // was -4, was -78 most recently
+        INTAKE(12.0), // was -12, -4, was -78 most recently
         AGITATE(20);  // was 20, was -50 most recently
 
         private final double degrees;
@@ -67,7 +67,7 @@ public class IntakeSubsystem extends SubsystemBase {
         }
     }
 
-    private static final double kPivotReduction = 75.0; //was 50
+    private static final double kPivotReduction = 85.0; //was 50
     private static final AngularVelocity kMaxPivotSpeed = KrakenX60.kFreeSpeed.div(kPivotReduction);
     private static final Angle kPositionTolerance = Degrees.of(5);
 

@@ -125,9 +125,9 @@ public class RobotContainer {
 
         // Boilerplate code to start the camera server
         
-        driverCam = CameraServer.startAutomaticCapture("Driver Cam", 0);
-        driverCam.setResolution(640, 480);
-        driverCam.setFPS(20);
+        //driverCam = CameraServer.startAutomaticCapture("Driver Cam", 0);
+        //driverCam.setResolution(640, 480);
+        //driverCam.setFPS(20);
 
 
         driverController.y().whileTrue(drivetrain.applyRequest(() -> brake));
