@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.Degrees;
 
 import java.util.function.DoubleSupplier;
 
+import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -58,14 +59,30 @@ public class AimAndDriveCommand extends Command {
     private Rotation2d getDirectionToHub() {
         final Translation2d hubPosition = Landmarks.hubPosition();
         final Translation2d robotPosition = swerve.getState().Pose.getTranslation();
-        final Rotation2d hubDirectionInBlueAlliancePerspective = hubPosition.minus(robotPosition).getAngle();
-        final Rotation2d hubDirectionInOperatorPerspective = hubDirectionInBlueAlliancePerspective.rotateBy(swerve.getOperatorForwardDirection());
-        return hubDirectionInOperatorPerspective;
+        //final Rotation2d hubDirectionInBlueAlliancePerspective = hubPosition.minus(robotPosition).getAngle();
+        //final Rotation2d hubDirectionInOperatorPerspective = hubDirectionInBlueAlliancePerspective.rotateBy(swerve.getOperatorForwardDirection());
+        //return hubDirectionInOperatorPerspective;
+
+         return hubPosition.minus(robotPosition).getAngle(); // no rotateBy here
     }
 
     @Override
     public void execute() {
         final ManualDriveInput input = inputSmoother.getSmoothedInput();
+
+        final Rotation2d targetHeading = getDirectionToHub();
+        final Rotation2d currentHeading = swerve.getState().Pose.getRotation();
+        final Rotation2d operatorForward = swerve.getOperatorForwardDirection();
+        final double headingErrorDeg = targetHeading.minus(currentHeading).getDegrees();
+
+        //SignalLogger.writeDouble("Aim/TargetHeadingDeg", targetHeading.getDegrees());
+        //SignalLogger.writeDouble("Aim/CurrentHeadingDeg", currentHeading.getDegrees());
+        //SignalLogger.writeDouble("Aim/OperatorForwardDeg", operatorForward.getDegrees());
+        //SignalLogger.writeDouble("Aim/HeadingErrorDeg", headingErrorDeg);
+        //SignalLogger.writeDouble("Aim/CommandedForward", input.forward);
+        //SignalLogger.writeDouble("Aim/CommandedLeft", input.left);
+
+
         swerve.setControl(
             fieldCentricFacingAngleRequest
                 .withVelocityX(Driving.kMaxSpeed.times(input.forward))

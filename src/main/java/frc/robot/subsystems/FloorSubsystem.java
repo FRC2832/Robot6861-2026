@@ -24,7 +24,7 @@ public class FloorSubsystem extends SubsystemBase {
     public enum Speed {
         STOP(0),
         FEED(0.83),
-        REVERSEFEED(-0.3);
+        REVERSEFEED(-0.45);
 
         private final double percentOutput;
 
@@ -53,7 +53,7 @@ public class FloorSubsystem extends SubsystemBase {
                 new CurrentLimitsConfigs()
                     .withStatorCurrentLimit(Amps.of(80))
                     .withStatorCurrentLimitEnable(true)
-                    .withSupplyCurrentLimit(Amps.of(60))
+                    .withSupplyCurrentLimit(Amps.of(30))
                     .withSupplyCurrentLimitEnable(true)
             );
 

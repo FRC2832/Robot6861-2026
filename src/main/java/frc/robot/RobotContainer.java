@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 import frc.robot.generated.TunerConstants;
+import frc.robot.commands.AutoRoutines;
 import frc.robot.commands.SpeedModeCMD;
 import frc.robot.commands.SubsystemCommands;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -65,9 +66,14 @@ public class RobotContainer {
 
     // Command instantiation
     private final SubsystemCommands subsystemCommands = new SubsystemCommands(drivetrain, intakeSubsystem, floorSubsystem, feederSubsystem, shooterSubsystem, hoodSubsystem, hangerSubsystem);
+    private final AutoRoutines autoRoutines = new AutoRoutines(
+        drivetrain, intakeSubsystem, floorSubsystem, feederSubsystem,
+        shooterSubsystem, hoodSubsystem, hangerSubsystem, limelightSubsystem
+    );
 
     public RobotContainer() {
         configureBindings();
+        autoRoutines.configure();
     }
 
     private void configureBindings() {
@@ -83,18 +89,20 @@ public class RobotContainer {
             )
         );
 
+        //  Limelight disabled to reduce CPU usage
         // limelightSubsystem.setDefaultCommand(
-           // limelightSubsystem.run(() -> {
-             //   var measurement = limelightSubsystem.getMeasurement(drivetrain.getState().Pose);
-               // measurement.ifPresent(m ->
-                 //   drivetrain.addVisionMeasurement(
-                   //     m.poseEstimate.pose,
-                     //   m.poseEstimate.timestampSeconds,
-                       // m.standardDeviations
-                    //)
-               // );
-           // })
-        //);
+        //    limelightSubsystem.run(() -> {
+        //      var measurement = limelightSubsystem.getMeasurement(drivetrain.getState().Pose);
+        //      measurement.ifPresent(m ->
+        //          drivetrain.addVisionMeasurement(
+        //             m.poseEstimate.pose,
+        //             m.poseEstimate.timestampSeconds,
+        //             m.standardDeviations
+        //             )
+        //         );
+        //     })
+        //     .ignoringDisable(true)
+        // );
 
         shooterSubsystem.setDefaultCommand(shooterSubsystem.idleCommand());
 
@@ -117,9 +125,9 @@ public class RobotContainer {
 
         // Boilerplate code to start the camera server
         
-        driverCam = CameraServer.startAutomaticCapture("Driver Cam", 0);
-        driverCam.setResolution(640, 480);
-        driverCam.setFPS(20);
+        //driverCam = CameraServer.startAutomaticCapture("Driver Cam", 0);
+        //driverCam.setResolution(640, 480);
+        //driverCam.setFPS(20);
 
 
         driverController.y().whileTrue(drivetrain.applyRequest(() -> brake));
@@ -137,6 +145,9 @@ public class RobotContainer {
         // Reset the field-centric heading on start press.
         driverController.start().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
+        // Back button disables shooter idle (pit safety)
+        driverController.back().onTrue(shooterSubsystem.runOnce(() -> shooterSubsystem.setIdleEnabled(false)));
+
         //this is turtle mode //TODO: decrease thresholds as robot speed increases
         driverController.leftTrigger(0.2).whileTrue(new SpeedModeCMD(this,0.7));
         
@@ -148,40 +159,71 @@ public class RobotContainer {
 
         // Set to a button for homing in the pit
         RobotModeTriggers.autonomous().or(RobotModeTriggers.teleop())
-             .onTrue(intakeSubsystem.runOnce(() -> intakeSubsystem.seedPosition(65)));
+             .onTrue(intakeSubsystem.runOnce(() -> intakeSubsystem.seedPosition(65)))
+             .onTrue(shooterSubsystem.runOnce(() -> shooterSubsystem.setIdleEnabled(true)));
             
            // .onTrue(intakeSubsystem.homingCommand())
            // .onTrue(hangerSubsystem.homingCommand());
 
-        driverController.rightTrigger().whileTrue(subsystemCommands.aimAndShoot());
-        driverController.rightBumper().whileTrue(subsystemCommands.shootManually());
+        // Aim and shoot disabled - turns wrong direction - might be due to Pigeon orientation
+        // driverController.rightTrigger().whileTrue(subsystemCommands.aimAndShoot());
+        driverController.rightBumper().whileTrue(subsystemCommands.shootManually())
+            .onFalse(subsystemCommands.briefReverse());
 
         //Sweet Spot
-        driverController.x().whileTrue(subsystemCommands.sweetSpot());
+        driverController.x().whileTrue(subsystemCommands.sweetSpot())
+            .onFalse(subsystemCommands.briefReverse());
+
+         //Hub Shot
+        driverController.leftBumper().whileTrue(subsystemCommands.hubShot())
+            .onFalse(subsystemCommands.briefReverse());
+
         
-        driverController.povUp().onTrue(hangerSubsystem.positionCommand(HangerSubsystem.Position.HANGING));
+        
+        //CLimbing mechanism
+        //TODO: uncomment for hanging when climber meets perimeter rules  
+        //driverController.povUp().onTrue(hangerSubsystem.positionCommand(HangerSubsystem.Position.HANGING));
+        driverController.povUp().onTrue(hangerSubsystem.positionCommand(HangerSubsystem.Position.EXTEND_HOPPER));
+        
         driverController.povDown().onTrue(hangerSubsystem.positionCommand(HangerSubsystem.Position.HUNG));
 
 
         // Intake controls
         operatorController.rightTrigger().whileTrue(intakeSubsystem.intakeCommand()); // was leftTrigger
+        operatorController.leftTrigger().whileTrue(intakeSubsystem.reverseIntakeCommand());
+
         operatorController.start().onTrue(intakeSubsystem.homingCommand());
-        operatorController.back().onTrue(intakeSubsystem.runOnce(() -> intakeSubsystem.set(IntakeSubsystem.Position.STOWED))); // was leftBumper
+        operatorController.back().onTrue(intakeSubsystem.runOnce(() -> intakeSubsystem.set(IntakeSubsystem.Position.INTAKE))); // was leftBumper
         
         // Shooter controls
         operatorController.b().onTrue(hoodSubsystem.runOnce(() -> hoodSubsystem.setPosition(0.158)));
-        operatorController.rightBumper().whileTrue(subsystemCommands.shootManually());
+        operatorController.rightBumper().whileTrue(subsystemCommands.shootManually())
+            .onFalse(subsystemCommands.briefReverse());
 
-        //Sweet Spot
-        operatorController.x().whileTrue(subsystemCommands.sweetSpot());
+        // Sweet Spot
+        operatorController.x().whileTrue(subsystemCommands.sweetSpot())
+            .onFalse(subsystemCommands.briefReverse());
         operatorController.leftBumper().whileTrue(subsystemCommands.reverseDeliver());
+
+        // Snowplow
+        operatorController.y().whileTrue(subsystemCommands.snowPlow());
         
 
+        // Agitate command
         operatorController.a().whileTrue(intakeSubsystem.agitateCommand());
 
         // Shooter RPM tuning
         operatorController.povUp().onTrue(shooterSubsystem.runOnce(shooterSubsystem::incrementTargetRPM));
-        operatorController.povDown().onTrue(shooterSubsystem.runOnce(shooterSubsystem::decrementTargetRPM));  
+        operatorController.povDown().onTrue(shooterSubsystem.runOnce(shooterSubsystem::decrementTargetRPM));
+
+        // Emergency CANivore USB reset.  this didn't fix our issue. LEaving it in for now. CTRE id 29ca-
+        //operatorController.y().onTrue(Commands.runOnce(() -> {
+           // try {
+           //     Runtime.getRuntime().exec(new String[]{"usbreset", "/dev/bus/usb/001/003"});
+           // } catch (Exception e) {
+           //     e.printStackTrace();
+           //}
+        //}).ignoringDisable(true));  
         
     }
 
@@ -203,6 +245,8 @@ public class RobotContainer {
     }
     */
 
+    // Autonomous is now handled by AutoRoutines and the AutoChooser on SmartDashboard
+    /*
     public Command getAutonomousCommand() {
         // Simple drive forward auton
         final var idle = new SwerveRequest.Idle();
@@ -221,6 +265,7 @@ public class RobotContainer {
             drivetrain.applyRequest(() -> idle)
         );
     }
+    */
 
     public void setSpeedMultiplier(double multiplier) {
         this.speedMultiplier = multiplier;

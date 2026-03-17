@@ -36,7 +36,8 @@ import frc.robot.Ports;
 public class IntakeSubsystem extends SubsystemBase {
     public enum Speed {
         STOP(0),
-        INTAKE(0.7);  // was 0.8, 0.6 was good to keep temps down
+        INTAKE(0.8), // was 0.8, 0.6 was good to keep temps down
+        REVERSEINTAKE(-0.3);
 
         private final double percentOutput;
 
@@ -52,8 +53,8 @@ public class IntakeSubsystem extends SubsystemBase {
     public enum Position {
         HOMED(75),
         STOWED(65),
-        INTAKE(-78.0), // was -4
-        AGITATE(-50);  // was 20
+        INTAKE(12.0), // was -12, -4, was -78 most recently
+        AGITATE(20);  // was 20, was -50 most recently
 
         private final double degrees;
 
@@ -66,7 +67,7 @@ public class IntakeSubsystem extends SubsystemBase {
         }
     }
 
-    private static final double kPivotReduction = 25.0; //was 50
+    private static final double kPivotReduction = 85.0; //was 50
     private static final AngularVelocity kMaxPivotSpeed = KrakenX60.kFreeSpeed.div(kPivotReduction);
     private static final Angle kPositionTolerance = Degrees.of(5);
 
@@ -94,9 +95,9 @@ public class IntakeSubsystem extends SubsystemBase {
             )
             .withCurrentLimits(
                 new CurrentLimitsConfigs()
-                    .withStatorCurrentLimit(Amps.of(90))
+                    .withStatorCurrentLimit(Amps.of(60))  //was 90
                     .withStatorCurrentLimitEnable(true)
-                    .withSupplyCurrentLimit(Amps.of(60))
+                    .withSupplyCurrentLimit(Amps.of(20))  //was 60
                     .withSupplyCurrentLimitEnable(true)
             )
             .withFeedback(
@@ -111,7 +112,7 @@ public class IntakeSubsystem extends SubsystemBase {
             )
             .withSlot0(
                 new Slot0Configs()
-                    .withKP(300)
+                    .withKP(150) //was 300
                     .withKI(0)
                     .withKD(0)
                     .withKV(12.0 / kMaxPivotSpeed.in(RotationsPerSecond)) // 12 volts when requesting max RPS
@@ -128,9 +129,9 @@ public class IntakeSubsystem extends SubsystemBase {
             )
             .withCurrentLimits(
                 new CurrentLimitsConfigs()
-                    .withStatorCurrentLimit(Amps.of(70))
+                    .withStatorCurrentLimit(Amps.of(60)) //was 70a
                     .withStatorCurrentLimitEnable(true)
-                    .withSupplyCurrentLimit(Amps.of(60))
+                    .withSupplyCurrentLimit(Amps.of(50)) //was 60a
                     .withSupplyCurrentLimitEnable(true)
             );
         rollerMotor.getConfigurator().apply(config);
@@ -177,6 +178,16 @@ public class IntakeSubsystem extends SubsystemBase {
         );
     }
 
+    public Command reverseIntakeCommand() {
+        return startEnd(
+            () -> {
+                set(Position.AGITATE);
+                set(Speed.REVERSEINTAKE);
+            },
+            () -> set(Speed.STOP)
+        );
+    }
+
     public Command agitateCommand() {
         return runOnce(() -> set(Speed.INTAKE))
             .andThen(
@@ -212,6 +223,7 @@ public class IntakeSubsystem extends SubsystemBase {
     public void initSendable(SendableBuilder builder) {
         builder.addStringProperty("Command", () -> getCurrentCommand() != null ? getCurrentCommand().getName() : "null", null);
         builder.addDoubleProperty("Angle (degrees)", () -> pivotMotor.getPosition().getValue().in(Degrees), null);
+        builder.addDoubleProperty("Speed (rpm)", () -> pivotMotor.getVelocity().getValue().in(RPM), null);
         builder.addDoubleProperty("RPM", () -> rollerMotor.getVelocity().getValue().in(RPM), null);
         builder.addDoubleProperty("Pivot Supply Current", () -> pivotMotor.getSupplyCurrent().getValue().in(Amps), null);
         builder.addDoubleProperty("Roller Supply Current", () -> rollerMotor.getSupplyCurrent().getValue().in(Amps), null);

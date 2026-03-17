@@ -30,7 +30,7 @@ import frc.robot.Ports;
 public class FeederSubsystem extends SubsystemBase {
     public enum Speed {
         FEED(5000),
-        REVERSEFEED(-2000);
+        REVERSEFEED(-3000); // was -2000
 
         private final double rpm;
 
@@ -58,9 +58,9 @@ public class FeederSubsystem extends SubsystemBase {
             )
             .withCurrentLimits(
                 new CurrentLimitsConfigs()
-                    .withStatorCurrentLimit(Amps.of(80))
+                    .withStatorCurrentLimit(Amps.of(60)) //was 80A
                     .withStatorCurrentLimitEnable(true)
-                    .withSupplyCurrentLimit(Amps.of(60))
+                    .withSupplyCurrentLimit(Amps.of(40)) //was 30A  & 60A
                     .withSupplyCurrentLimitEnable(true)
             )
             .withSlot0(

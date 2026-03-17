@@ -40,7 +40,7 @@ import frc.robot.Ports;
 public class HangerSubsystem extends SubsystemBase {
     public enum Position {
         HOMED(0),
-        EXTEND_HOPPER(2),
+        EXTEND_HOPPER(3.5),
         HANGING(6),
         HUNG(0.2);
 
@@ -78,7 +78,7 @@ public class HangerSubsystem extends SubsystemBase {
                 new CurrentLimitsConfigs()
                     .withStatorCurrentLimit(Amps.of(80))
                     .withStatorCurrentLimitEnable(true)
-                    .withSupplyCurrentLimit(Amps.of(50))
+                    .withSupplyCurrentLimit(Amps.of(40))  //was 50
                     .withSupplyCurrentLimitEnable(true)
             )
             .withMotionMagic(
@@ -124,7 +124,7 @@ public class HangerSubsystem extends SubsystemBase {
             runOnce(() -> {
                 motor.setPosition(Position.HOMED.motorAngle());
                 isHomed = true;
-                System.out.println("************ is homed *******=" + isHomed);
+                //System.out.println("************ is homed *******=" + isHomed);
                 set(Position.EXTEND_HOPPER);
             })
         )
