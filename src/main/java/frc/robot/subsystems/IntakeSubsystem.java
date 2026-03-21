@@ -37,7 +37,7 @@ public class IntakeSubsystem extends SubsystemBase {
     public enum Speed {
         STOP(0),
         INTAKE(0.8), // was 0.8, 0.6 was good to keep temps down
-        REVERSEINTAKE(-0.3);
+        REVERSEINTAKE(-0.5); //was -0.3
 
         private final double percentOutput;
 
@@ -53,8 +53,10 @@ public class IntakeSubsystem extends SubsystemBase {
     public enum Position {
         HOMED(75),
         STOWED(65),
-        INTAKE(12.0), // was -12, -4, was -78 most recently
-        AGITATE(20);  // was 20, was -50 most recently
+        // INTAKE(12.0), // was -12, -4, was -78 most recently — removed for hybrid gravity-drop approach
+        // AGITATE(20),  // was 20, was -50 most recently — replaced with high agitate positions
+        AGITATE_HIGH(45),  // TODO: tune — upper bound of agitate oscillation
+        AGITATE_LOW(30);   // TODO: tune — lower bound of agitate oscillation
 
         private final double degrees;
 
@@ -67,7 +69,7 @@ public class IntakeSubsystem extends SubsystemBase {
         }
     }
 
-    private static final double kPivotReduction = 85.0; //was 50
+    private static final double kPivotReduction = 50.0; //was 50
     private static final AngularVelocity kMaxPivotSpeed = KrakenX60.kFreeSpeed.div(kPivotReduction);
     private static final Angle kPositionTolerance = Degrees.of(5);
 
@@ -168,42 +170,85 @@ public class IntakeSubsystem extends SubsystemBase {
         );
     }
 
+    // HYBRID APPROACH: gravity-drop for intake, PID only for upward moves
+    // Old PID-driven commands are commented out below each new version
+
     public Command intakeCommand() {
-        return startEnd(
-            () -> {
-                set(Position.INTAKE);
+        return Commands.sequence(
+            runOnce(() -> {
+                setPivotPercentOutput(-0.1);  // looks good! TODO: tune — gentle nudge, gravity does the rest
                 set(Speed.INTAKE);
-            },
-            () -> set(Speed.STOP)
-        );
+            }),
+            Commands.waitSeconds(1.2),  // TODO: tune — minimum time to ensure arm settles on bumpers
+            runOnce(() -> seedPosition(0)), // arm is down, reset encoder reference
+            Commands.idle()  // keep running until trigger released
+        )
+        .finallyDo(() -> set(Speed.STOP));
     }
+    // OLD intakeCommand — PID drove pivot down (chain slack/skip issues):
+    // public Command intakeCommand() {
+    //     return startEnd(
+    //         () -> {
+    //             set(Position.INTAKE);
+    //             set(Speed.INTAKE);
+    //         },
+    //         () -> set(Speed.STOP)
+    //     );
+    // }
 
     public Command reverseIntakeCommand() {
         return startEnd(
             () -> {
-                set(Position.AGITATE);
+                set(Position.AGITATE_LOW);
                 set(Speed.REVERSEINTAKE);
             },
             () -> set(Speed.STOP)
         );
     }
+    // OLD reverseIntakeCommand:
+    // public Command reverseIntakeCommand() {
+    //     return startEnd(
+    //         () -> {
+    //             set(Position.AGITATE);
+    //             set(Speed.REVERSEINTAKE);
+    //         },
+    //         () -> set(Speed.STOP)
+    //     );
+    // }
 
     public Command agitateCommand() {
         return runOnce(() -> set(Speed.INTAKE))
             .andThen(
                 Commands.sequence(
-                    runOnce(() -> set(Position.AGITATE)),
+                    runOnce(() -> set(Position.AGITATE_LOW)),
                     Commands.waitUntil(this::isPositionWithinTolerance),
-                    runOnce(() -> set(Position.INTAKE)),
+                    runOnce(() -> set(Position.AGITATE_HIGH)),
                     Commands.waitUntil(this::isPositionWithinTolerance)
                 )
                 .repeatedly()
             )
             .handleInterrupt(() -> {
-                set(Position.INTAKE);
+                setPivotPercentOutput(0);  // coast down
                 set(Speed.STOP);
             });
     }
+    // OLD agitateCommand — oscillated in the low/chain-slack zone:
+    // public Command agitateCommand() {
+    //     return runOnce(() -> set(Speed.INTAKE))
+    //         .andThen(
+    //             Commands.sequence(
+    //                 runOnce(() -> set(Position.AGITATE)),
+    //                 Commands.waitUntil(this::isPositionWithinTolerance),
+    //                 runOnce(() -> set(Position.INTAKE)),
+    //                 Commands.waitUntil(this::isPositionWithinTolerance)
+    //             )
+    //             .repeatedly()
+    //         )
+    //         .handleInterrupt(() -> {
+    //             set(Position.INTAKE);
+    //             set(Speed.STOP);
+    //         });
+    // }
 
     public Command homingCommand() {
         return Commands.sequence(
@@ -211,6 +256,20 @@ public class IntakeSubsystem extends SubsystemBase {
             Commands.waitUntil(() -> pivotMotor.getSupplyCurrent().getValue().in(Amps) > 6),
             runOnce(() -> {
                 pivotMotor.setPosition(Position.HOMED.angle());
+                isHomed = true;
+                set(Position.STOWED);
+            })
+        )
+        .unless(() -> isHomed)
+        .withInterruptBehavior(InterruptionBehavior.kCancelIncoming);
+    }
+
+    public Command stowCommand() {
+        return Commands.sequence(
+            runOnce(() -> setPivotPercentOutput(0.2)), // was 0.1
+            //Commands.waitUntil(() -> pivotMotor.getSupplyCurrent().getValue().in(Amps) > 6),
+            runOnce(() -> {
+                pivotMotor.setPosition(Position.STOWED.angle());
                 isHomed = true;
                 set(Position.STOWED);
             })

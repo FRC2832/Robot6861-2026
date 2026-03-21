@@ -11,6 +11,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.UsbCamera;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -38,7 +39,12 @@ public class RobotContainer {
     
     // TODO: Increase values eventually and put these values into Constants file
     private final double MaxAngularRate = Constants.Driving.AngularRateReduction * RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
-    private double speedMultiplier = 1.0; 
+    private double speedMultiplier = 1.0;
+
+    // Slew rate limiters — strafe more restrictive than forward/back
+    private final SlewRateLimiter xLimiter = new SlewRateLimiter(3.0);   // TODO: tune — forward/back
+    private final SlewRateLimiter yLimiter = new SlewRateLimiter(2.0);   // TODO: tune — strafe (more limiting)
+    private final SlewRateLimiter rotLimiter = new SlewRateLimiter(3.0); // TODO: tune — rotation
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -82,27 +88,27 @@ public class RobotContainer {
         drivetrain.setDefaultCommand(
             // Drivetrain will execute this command periodically
             drivetrain.applyRequest(() ->
-                drive.withVelocityX(driverController.getLeftY() * MaxSpeed * speedMultiplier) // Drive forward with negative Y (forward)
-                    .withVelocityY(driverController.getLeftX() * MaxSpeed * speedMultiplier) // Drive left with negative X (left)
-                    .withRotationalRate(-driverController.getRightX() * MaxAngularRate * speedMultiplier) // Drive counterclockwise with negative X (left)
+                drive.withVelocityX(xLimiter.calculate(driverController.getLeftY()) * MaxSpeed * speedMultiplier) // Drive forward with negative Y (forward)
+                    .withVelocityY(yLimiter.calculate(driverController.getLeftX()) * MaxSpeed * speedMultiplier) // Drive left with negative X (left)
+                    .withRotationalRate(rotLimiter.calculate(-driverController.getRightX()) * MaxAngularRate * speedMultiplier) // Drive counterclockwise with negative X (left)
                     .withDeadband(MaxSpeed * speedMultiplier * 0.15)
             )
         );
 
-        //  Limelight disabled to reduce CPU usage
-        // limelightSubsystem.setDefaultCommand(
-        //    limelightSubsystem.run(() -> {
-        //      var measurement = limelightSubsystem.getMeasurement(drivetrain.getState().Pose);
-        //      measurement.ifPresent(m ->
-        //          drivetrain.addVisionMeasurement(
-        //             m.poseEstimate.pose,
-        //             m.poseEstimate.timestampSeconds,
-        //             m.standardDeviations
-        //             )
-        //         );
-        //     })
-        //     .ignoringDisable(true)
-        // );
+        //Limelight disabled to reduce CPU usage
+        limelightSubsystem.setDefaultCommand(
+            limelightSubsystem.run(() -> {
+             var measurement = limelightSubsystem.getMeasurement(drivetrain.getState().Pose);
+             measurement.ifPresent(m ->
+                 drivetrain.addVisionMeasurement(
+                    m.poseEstimate.pose,
+                    m.poseEstimate.timestampSeconds,
+                    m.standardDeviations
+                     )
+                 );
+             })
+             .ignoringDisable(true)
+         );
 
         shooterSubsystem.setDefaultCommand(shooterSubsystem.idleCommand());
 
@@ -123,8 +129,8 @@ public class RobotContainer {
             drivetrain.applyRequest(() -> idle).ignoringDisable(true)
         );
 
-        // Boilerplate code to start the camera server
-        
+        // DISABLED: USB camera on roboRIO drew too much current, causing the roboRIO to brown out and shut down the robot.
+        // Use PhotonVision on a coprocessor instead for driver camera.
         //driverCam = CameraServer.startAutomaticCapture("Driver Cam", 0);
         //driverCam.setResolution(640, 480);
         //driverCam.setFPS(20);
@@ -192,8 +198,8 @@ public class RobotContainer {
         operatorController.rightTrigger().whileTrue(intakeSubsystem.intakeCommand()); // was leftTrigger
         operatorController.leftTrigger().whileTrue(intakeSubsystem.reverseIntakeCommand());
 
-        operatorController.start().onTrue(intakeSubsystem.homingCommand());
-        operatorController.back().onTrue(intakeSubsystem.runOnce(() -> intakeSubsystem.set(IntakeSubsystem.Position.INTAKE))); // was leftBumper
+        operatorController.start().onTrue(intakeSubsystem.stowCommand());
+        operatorController.back().onTrue(intakeSubsystem.runOnce(() -> intakeSubsystem.runOnce(() -> intakeSubsystem.seedPosition(0)))); // was leftBumper
         
         // Shooter controls
         operatorController.b().onTrue(hoodSubsystem.runOnce(() -> hoodSubsystem.setPosition(0.158)));
