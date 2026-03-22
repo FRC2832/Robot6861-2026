@@ -176,7 +176,9 @@ public class IntakeSubsystem extends SubsystemBase {
     public Command intakeCommand() {
         return Commands.sequence(
             runOnce(() -> {
-                setPivotPercentOutput(-0.2);  //  TODO: tune — gentle nudge, gravity does the rest
+                if (pivotMotor.getPosition().getValue().in(Degrees) > 30) {
+                    setPivotPercentOutput(-0.2);  // nudge only if arm is up, skip if already down
+                }
                 set(Speed.INTAKE);
             }),
             Commands.waitSeconds(1.5),  // TODO: tune — minimum time to ensure arm settles on bumpers
