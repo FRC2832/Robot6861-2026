@@ -176,14 +176,20 @@ public class IntakeSubsystem extends SubsystemBase {
     public Command intakeCommand() {
         return Commands.sequence(
             runOnce(() -> {
-                setPivotPercentOutput(-0.1);  // looks good! TODO: tune — gentle nudge, gravity does the rest
+                setPivotPercentOutput(-0.2);  //  TODO: tune — gentle nudge, gravity does the rest
                 set(Speed.INTAKE);
             }),
-            Commands.waitSeconds(1.2),  // TODO: tune — minimum time to ensure arm settles on bumpers
-            runOnce(() -> seedPosition(0)), // arm is down, reset encoder reference
+            Commands.waitSeconds(1.5),  // TODO: tune — minimum time to ensure arm settles on bumpers
+            runOnce(() -> {
+                seedPosition(0);         // arm is down, reset encoder reference
+                setPivotPercentOutput(0); // stop nudging, arm is resting on bumpers
+            }),
             Commands.idle()  // keep running until trigger released
         )
-        .finallyDo(() -> set(Speed.STOP));
+        .finallyDo(() -> {
+            setPivotPercentOutput(0);  // stop pivot nudge
+            set(Speed.STOP);
+        });
     }
     // OLD intakeCommand — PID drove pivot down (chain slack/skip issues):
     // public Command intakeCommand() {
@@ -266,8 +272,8 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public Command stowCommand() {
         return Commands.sequence(
-            runOnce(() -> setPivotPercentOutput(0.2)), // was 0.1
-            //Commands.waitUntil(() -> pivotMotor.getSupplyCurrent().getValue().in(Amps) > 6),
+            runOnce(() -> setPivotPercentOutput(0.3)), // was 0.1
+            Commands.waitUntil(() -> pivotMotor.getSupplyCurrent().getValue().in(Amps) > 6),
             runOnce(() -> {
                 pivotMotor.setPosition(Position.STOWED.angle());
                 isHomed = true;

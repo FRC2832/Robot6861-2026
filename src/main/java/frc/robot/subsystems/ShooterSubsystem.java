@@ -76,9 +76,10 @@ public class ShooterSubsystem extends SubsystemBase {
             .withSlot0(
                 new Slot0Configs()
                     .withKP(0.5)
-                    .withKI(2)
+                    .withKI(0)
                     .withKD(0)
                     .withKV(12.0 / KrakenX60.kFreeSpeed.in(RotationsPerSecond)) // 12 volts when requesting max RPS
+                    .withKA(0.0) // could be tuned to improve response, but leaving at 0 for now since velocity loop is already pretty aggressive and we want to avoid overshoot
             );
         
         motor.getConfigurator().apply(config);
