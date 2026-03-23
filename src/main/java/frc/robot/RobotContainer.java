@@ -21,9 +21,11 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 import frc.robot.generated.TunerConstants;
 import frc.robot.commands.AutoRoutines;
+import frc.robot.commands.HeadingLockDriveCommand;
 import frc.robot.commands.SpeedModeCMD;
 import frc.robot.commands.SubsystemCommands;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.util.DriveInputSmoother;
 import frc.robot.subsystems.FeederSubsystem;
 import frc.robot.subsystems.FloorSubsystem;
 import frc.robot.subsystems.HangerSubsystem;
@@ -85,15 +87,29 @@ public class RobotContainer {
     private void configureBindings() {
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
-        drivetrain.setDefaultCommand(
-            // Drivetrain will execute this command periodically
-            drivetrain.applyRequest(() ->
-                drive.withVelocityX(xLimiter.calculate(driverController.getLeftY()) * MaxSpeed * speedMultiplier) // Drive forward with negative Y (forward)
-                    .withVelocityY(yLimiter.calculate(driverController.getLeftX()) * MaxSpeed * speedMultiplier) // Drive left with negative X (left)
-                    .withRotationalRate(rotLimiter.calculate(-driverController.getRightX()) * MaxAngularRate * speedMultiplier) // Drive counterclockwise with negative X (left)
-                    .withDeadband(MaxSpeed * speedMultiplier * 0.15)
-            )
+        // Original default command (no heading correction — drifts when strafing)
+        // drivetrain.setDefaultCommand(
+        //     drivetrain.applyRequest(() ->
+        //         drive.withVelocityX(xLimiter.calculate(driverController.getLeftY()) * MaxSpeed * speedMultiplier)
+        //             .withVelocityY(yLimiter.calculate(driverController.getLeftX()) * MaxSpeed * speedMultiplier)
+        //             .withRotationalRate(rotLimiter.calculate(-driverController.getRightX()) * MaxAngularRate * speedMultiplier)
+        //             .withDeadband(MaxSpeed * speedMultiplier * 0.15)
+        //     )
+        // );
+
+        // Heading-lock drive: holds heading via PID when rotation stick is idle
+        final HeadingLockDriveCommand headingLockDrive = new HeadingLockDriveCommand(
+            drivetrain,
+            new DriveInputSmoother(
+                driverController::getLeftY,
+                driverController::getLeftX,
+                () -> -driverController.getRightX()
+            ),
+            MaxSpeed,
+            MaxAngularRate,
+            this::getSpeedMultiplier
         );
+        drivetrain.setDefaultCommand(headingLockDrive);
 
         //Limelight disabled to reduce CPU usage
         limelightSubsystem.setDefaultCommand(
@@ -148,8 +164,11 @@ public class RobotContainer {
         //driverController.start().and(driverController.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
         //driverController.start().and(driverController.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
-        // Reset the field-centric heading on start press.
-        driverController.start().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+        // Reset the field-centric heading on start press, and re-sync heading lock target.
+        driverController.start().onTrue(drivetrain.runOnce(() -> {
+            drivetrain.seedFieldCentric();
+            headingLockDrive.resetTargetHeading();
+        }));
 
         // Back button disables shooter idle (pit safety)
         driverController.back().onTrue(shooterSubsystem.runOnce(() -> shooterSubsystem.setIdleEnabled(false)));
@@ -172,7 +191,7 @@ public class RobotContainer {
            // .onTrue(hangerSubsystem.homingCommand());
 
         // Aim and shoot disabled - turns wrong direction - might be due to Pigeon orientation
-        // driverController.rightTrigger().whileTrue(subsystemCommands.aimAndShoot());
+        driverController.rightTrigger().whileTrue(subsystemCommands.aimAndShoot());
         driverController.rightBumper().whileTrue(subsystemCommands.shootManually())
             .onFalse(subsystemCommands.briefReverse());
 
@@ -275,6 +294,9 @@ public class RobotContainer {
 
     public void setSpeedMultiplier(double multiplier) {
         this.speedMultiplier = multiplier;
-        
+    }
+
+    public double getSpeedMultiplier() {
+        return speedMultiplier;
     }
 }

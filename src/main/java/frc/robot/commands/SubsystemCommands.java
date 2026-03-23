@@ -77,13 +77,14 @@ public final class SubsystemCommands {
             Commands.waitSeconds(0.25)
                 .andThen(prepareShotCommand),
             Commands.waitUntil(() -> aimAndDriveCommand.isAimed() && prepareShotCommand.isReadyToShoot())
-                .andThen(feed())
-        );
+                .andThen(feed().withName("Aim Feed"))
+        ).withName("Aim And Shoot");
     }
 
     public Command shootManually() {
         return shooter.dashboardSpinUpCommand()
-            .andThen(feed())
+            .andThen(feed().withName("Manual Feed"))
+            .withName("Shoot Manually")
             .handleInterrupt(() -> shooter.stop());
     }
 
@@ -92,8 +93,9 @@ public final class SubsystemCommands {
         return Commands.parallel(
             hood.runOnce(() -> hood.setPosition(0.21)), // was 0.19
             shooter.spinUpCommand(4750) //was 5000rpm
-        )
-        .andThen(feed())
+        ).withName("Sweet Spot Prepare")
+        .andThen(feed().withName("Sweet Spot Feed"))
+        .withName("Sweet Spot")
         .handleInterrupt(() -> shooter.stop());
     }
 
@@ -107,26 +109,38 @@ public final class SubsystemCommands {
                     intake.intakeCommand(),
                     floor.feedCommand(),
                     feeder.feedCommand()
-                ))
-        )
+                ).withName("Snow Plow Feed"))
+        ).withName("Snow Plow")
         .handleInterrupt(() -> shooter.stop());
     }
 
     public Command hubShot() {
         return Commands.parallel(
-            hood.runOnce(() -> hood.setPosition(0.0)), 
+            hood.runOnce(() -> hood.setPosition(0.0)),
             shooter.spinUpCommand(3650) //was 3750 and very high % in the hub!
-        )
-        .andThen(feed())
+        ).withName("Hub Shot Prepare")
+        .andThen(feed().withName("Hub Shot Feed"))
+        .withName("Hub Shot")
         .handleInterrupt(() -> shooter.stop());
     }
 
     public Command hubShotAuton() {
         return Commands.parallel(
-            hood.runOnce(() -> hood.setPosition(0.0)), 
+            hood.runOnce(() -> hood.setPosition(0.0)),
             shooter.spinUpCommand(3650) //was 3750 and very high % in the hub!
-        )
-        .andThen(feedAuton())
+        ).withName("Hub Shot Auton Prepare")
+        .andThen(feedAuton().withName("Hub Shot Auton Feed"))
+        .withName("Hub Shot Auton")
+        .handleInterrupt(() -> shooter.stop());
+    }
+
+    public Command trenchShotAuton() {
+        return Commands.parallel(
+            hood.runOnce(() -> hood.setPosition(0.15)),
+            shooter.spinUpCommand(4000) //
+        ).withName("Trench Shot Auton Prepare")
+        .andThen(feedAuton().withName("Trench Shot Auton Feed"))
+        .withName("Trench Shot Auton")
         .handleInterrupt(() -> shooter.stop());
     }
 
@@ -136,7 +150,7 @@ public final class SubsystemCommands {
             shooter.reverseCommand(),
             feeder.reverseFeedCommand(),
             floor.reverseFeedCommand()
-        );
+        ).withName("Reverse Deliver");
     }
 
     private Command feed() {
@@ -144,7 +158,7 @@ public final class SubsystemCommands {
             Commands.waitSeconds(0.25),
             Commands.parallel(
                 feeder.feedCommand(),
-                Commands.waitSeconds(0.125)
+                Commands.waitSeconds(0.10) // was .125
                     .andThen(floor.feedCommand().alongWith(intake.agitateCommand()))
             )
         );
@@ -154,7 +168,7 @@ public final class SubsystemCommands {
         return Commands.parallel(
             feeder.reverseFeedCommand(),
             floor.reverseFeedCommand()
-        ).withTimeout(0.25);
+        ).withName("Brief Reverse").withTimeout(0.25);
     }
 
     //No agitation for auton feed to prevent jamming on the way out of the hub

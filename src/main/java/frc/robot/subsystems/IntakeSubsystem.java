@@ -36,7 +36,7 @@ import frc.robot.Ports;
 public class IntakeSubsystem extends SubsystemBase {
     public enum Speed {
         STOP(0),
-        INTAKE(0.8), // was 0.8, 0.6 was good to keep temps down
+        INTAKE(0.5), // TODO: set up at 0.8 for comp!, 0.6 was good to keep temps down
         REVERSEINTAKE(-0.5); //was -0.3
 
         private final double percentOutput;
@@ -71,7 +71,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
     private static final double kPivotReduction = 50.0; //was 50
     private static final AngularVelocity kMaxPivotSpeed = KrakenX60.kFreeSpeed.div(kPivotReduction);
-    private static final Angle kPositionTolerance = Degrees.of(5);
+    private static final Angle kPositionTolerance = Degrees.of(7);
 
     private final TalonFX pivotMotor, rollerMotor;
     private final VoltageOut pivotVoltageRequest = new VoltageOut(0);
@@ -177,11 +177,11 @@ public class IntakeSubsystem extends SubsystemBase {
         return Commands.sequence(
             runOnce(() -> {
                 if (pivotMotor.getPosition().getValue().in(Degrees) > 30) {
-                    setPivotPercentOutput(-0.2);  // nudge only if arm is up, skip if already down
+                    setPivotPercentOutput(-0.15);  // was -0.2 - too much nudge only if arm is up, skip if already down
                 }
                 set(Speed.INTAKE);
             }),
-            Commands.waitSeconds(1.5),  // TODO: tune — minimum time to ensure arm settles on bumpers
+            Commands.waitSeconds(1.0),  // was 1.5 - too fast TODO: tune — minimum time to ensure arm settles on bumpers
             runOnce(() -> {
                 seedPosition(0);         // arm is down, reset encoder reference
                 setPivotPercentOutput(0); // stop nudging, arm is resting on bumpers
@@ -230,6 +230,8 @@ public class IntakeSubsystem extends SubsystemBase {
                 Commands.sequence(
                     runOnce(() -> set(Position.AGITATE_LOW)),
                     Commands.waitUntil(this::isPositionWithinTolerance),
+                    runOnce(() -> set(Speed.INTAKE)), //tried reverseintake speed, but they went out
+                   
                     runOnce(() -> set(Position.AGITATE_HIGH)),
                     Commands.waitUntil(this::isPositionWithinTolerance)
                 )
@@ -260,7 +262,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public Command homingCommand() {
         return Commands.sequence(
-            runOnce(() -> setPivotPercentOutput(0.1)), // was 0.1
+            runOnce(() -> setPivotPercentOutput(0.4)), // was 0.1
             Commands.waitUntil(() -> pivotMotor.getSupplyCurrent().getValue().in(Amps) > 6),
             runOnce(() -> {
                 pivotMotor.setPosition(Position.HOMED.angle());
@@ -274,13 +276,11 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public Command stowCommand() {
         return Commands.sequence(
-            runOnce(() -> setPivotPercentOutput(0.3)), // was 0.1
-            Commands.waitUntil(() -> pivotMotor.getSupplyCurrent().getValue().in(Amps) > 6),
-            runOnce(() -> {
-                pivotMotor.setPosition(Position.STOWED.angle());
-                isHomed = true;
-                set(Position.STOWED);
-            })
+            // runOnce(() -> setPivotPercentOutput(0.4)), // was 0.1
+            // Commands.waitUntil(() -> pivotMotor.getSupplyCurrent().getValue().in(Amps) > 6),
+            runOnce(() -> set(Position.STOWED)),
+            Commands.waitUntil(() -> pivotMotor.getPosition().getValue().in(Degrees) > (Position.STOWED.angle().in(Degrees) - 5)),
+            runOnce(() -> isHomed = true)
         )
         .unless(() -> isHomed)
         .withInterruptBehavior(InterruptionBehavior.kCancelIncoming);
