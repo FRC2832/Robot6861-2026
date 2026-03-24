@@ -69,7 +69,7 @@ public class RobotContainer {
     private final HangerSubsystem hangerSubsystem = new HangerSubsystem();
     private final HoodSubsystem hoodSubsystem = new HoodSubsystem();
     private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
-    private final LimelightSubsystem limelightSubsystem = new LimelightSubsystem("limelight");
+    private final LimelightSubsystem limelightSubsystem = new LimelightSubsystem("limelight-dino");
     private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
 
     // Command instantiation

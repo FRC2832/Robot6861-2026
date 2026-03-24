@@ -92,18 +92,21 @@ public final class SubsystemCommands {
     public Command sweetSpot() {
         return Commands.parallel(
             hood.runOnce(() -> hood.setPosition(0.21)), // was 0.19
-            shooter.spinUpCommand(4750) //was 5000rpm
+            shooter.spinUpCommand(4450) //was 5000rpm
         ).withName("Sweet Spot Prepare")
         .andThen(feed().withName("Sweet Spot Feed"))
         .withName("Sweet Spot")
-        .handleInterrupt(() -> shooter.stop());
+        .finallyDo(() -> {
+            shooter.stop();
+            hood.setPosition(0.15);
+        });
     }
 
 
     public Command snowPlow() {
         return Commands.parallel(
             hood.runOnce(() -> hood.setPosition(0.75)),
-            shooter.spinUpCommand(4750), //was 5000rpm
+            shooter.spinUpCommand(3500), //was 4000rpm
             Commands.waitSeconds(0.5)
                 .andThen(Commands.parallel(
                     intake.intakeCommand(),
@@ -111,7 +114,10 @@ public final class SubsystemCommands {
                     feeder.feedCommand()
                 ).withName("Snow Plow Feed"))
         ).withName("Snow Plow")
-        .handleInterrupt(() -> shooter.stop());
+        .finallyDo(() -> {
+            shooter.stop();
+            hood.setPosition(0.15);
+        });
     }
 
     public Command hubShot() {
@@ -121,7 +127,10 @@ public final class SubsystemCommands {
         ).withName("Hub Shot Prepare")
         .andThen(feed().withName("Hub Shot Feed"))
         .withName("Hub Shot")
-        .handleInterrupt(() -> shooter.stop());
+        .finallyDo(() -> {
+            shooter.stop();
+            hood.setPosition(0.15);
+        });
     }
 
     public Command hubShotAuton() {
@@ -131,7 +140,10 @@ public final class SubsystemCommands {
         ).withName("Hub Shot Auton Prepare")
         .andThen(feedAuton().withName("Hub Shot Auton Feed"))
         .withName("Hub Shot Auton")
-        .handleInterrupt(() -> shooter.stop());
+        .finallyDo(() -> {
+            shooter.stop();
+            hood.setPosition(0.15);
+        });
     }
 
     public Command trenchShotAuton() {
@@ -141,7 +153,10 @@ public final class SubsystemCommands {
         ).withName("Trench Shot Auton Prepare")
         .andThen(feedAuton().withName("Trench Shot Auton Feed"))
         .withName("Trench Shot Auton")
-        .handleInterrupt(() -> shooter.stop());
+        .finallyDo(() -> {
+            shooter.stop();
+            hood.setPosition(0.15);
+        });
     }
 
 

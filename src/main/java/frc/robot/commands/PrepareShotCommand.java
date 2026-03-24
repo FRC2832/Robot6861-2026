@@ -75,6 +75,7 @@ public class PrepareShotCommand extends Command {
     @Override
     public void end(boolean interrupted) {
         shooter.stop();
+        hood.setPosition(0.15);
     }
 
     public static class Shot {
