@@ -107,7 +107,7 @@ public final class SubsystemCommands {
         return Commands.parallel(
             hood.runOnce(() -> hood.setPosition(0.75)),
             shooter.spinUpCommand(3500), //was 4000rpm
-            Commands.waitSeconds(0.5)
+            Commands.waitSeconds(0.4) // was 0.5, lowered to see if we can increase shooting speed - this is the time for the hood to get to position and shooter to get up to speed
                 .andThen(Commands.parallel(
                     intake.intakeCommand(),
                     floor.feedCommand(),
@@ -123,7 +123,7 @@ public final class SubsystemCommands {
     public Command hubShot() {
         return Commands.parallel(
             hood.runOnce(() -> hood.setPosition(0.0)),
-            shooter.spinUpCommand(3650) //was 3750 and very high % in the hub!
+            shooter.spinUpCommand(3650) //good value now! was 3750 and very high % in the hub!
         ).withName("Hub Shot Prepare")
         .andThen(feed().withName("Hub Shot Feed"))
         .withName("Hub Shot")
@@ -149,7 +149,7 @@ public final class SubsystemCommands {
     public Command trenchShotAuton() {
         return Commands.parallel(
             hood.runOnce(() -> hood.setPosition(0.15)),
-            shooter.spinUpCommand(4000) //
+            shooter.spinUpCommand(3800) // 4000 was perfect, but I moved closer to hub by about 6 inches
         ).withName("Trench Shot Auton Prepare")
         .andThen(feedAuton().withName("Trench Shot Auton Feed"))
         .withName("Trench Shot Auton")
@@ -170,7 +170,7 @@ public final class SubsystemCommands {
 
     private Command feed() {
         return Commands.sequence(
-            Commands.waitSeconds(0.25),
+            Commands.waitSeconds(0.25), // was .25, lowered to see if we can increase shooting speed
             Commands.parallel(
                 feeder.feedCommand(),
                 Commands.waitSeconds(0.10) // was .125
@@ -183,7 +183,7 @@ public final class SubsystemCommands {
         return Commands.parallel(
             feeder.reverseFeedCommand(),
             floor.reverseFeedCommand()
-        ).withName("Brief Reverse").withTimeout(0.25);
+        ).withName("Brief Reverse").withTimeout(0.18);
     }
 
     //No agitation for auton feed to prevent jamming on the way out of the hub

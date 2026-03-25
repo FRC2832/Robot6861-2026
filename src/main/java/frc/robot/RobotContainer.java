@@ -112,19 +112,19 @@ public class RobotContainer {
         drivetrain.setDefaultCommand(headingLockDrive);
 
         //Limelight disabled to reduce CPU usage
-        limelightSubsystem.setDefaultCommand(
-            limelightSubsystem.run(() -> {
-             var measurement = limelightSubsystem.getMeasurement(drivetrain.getState().Pose);
-             measurement.ifPresent(m ->
-                 drivetrain.addVisionMeasurement(
-                    m.poseEstimate.pose,
-                    m.poseEstimate.timestampSeconds,
-                    m.standardDeviations
-                     )
-                 );
-             })
-             .ignoringDisable(true)
-         );
+        //limelightSubsystem.setDefaultCommand(
+        //    limelightSubsystem.run(() -> {
+        //     var measurement = limelightSubsystem.getMeasurement(drivetrain.getState().Pose);
+        //     measurement.ifPresent(m ->
+        //         drivetrain.addVisionMeasurement(
+        //            m.poseEstimate.pose,
+        //            m.poseEstimate.timestampSeconds,
+        //            m.standardDeviations
+        //             )
+        //         );
+        //     })
+        //     .ignoringDisable(true)
+        // );
 
         shooterSubsystem.setDefaultCommand(shooterSubsystem.idleCommand());
 
@@ -192,11 +192,11 @@ public class RobotContainer {
 
         // Aim and shoot disabled - turns wrong direction - might be due to Pigeon orientation
         driverController.rightTrigger().whileTrue(subsystemCommands.aimAndShoot());
-        driverController.rightBumper().whileTrue(subsystemCommands.shootManually())
+        driverController.x().whileTrue(subsystemCommands.shootManually())
             .onFalse(subsystemCommands.briefReverse());
 
         //Sweet Spot
-        driverController.x().whileTrue(subsystemCommands.sweetSpot())
+        driverController.rightBumper().whileTrue(subsystemCommands.sweetSpot())
             .onFalse(subsystemCommands.briefReverse());
 
          //Hub Shot
@@ -214,7 +214,9 @@ public class RobotContainer {
 
 
         // Intake controls
-        operatorController.rightTrigger().whileTrue(intakeSubsystem.intakeCommand()); // was leftTrigger
+        operatorController.rightTrigger().whileTrue(
+            intakeSubsystem.intakeCommand().alongWith(floorSubsystem.feedCommand())
+        ); // was leftTrigger, added floor feed
         operatorController.leftTrigger().whileTrue(intakeSubsystem.reverseIntakeCommand());
 
         operatorController.start().onTrue(intakeSubsystem.stowCommand());

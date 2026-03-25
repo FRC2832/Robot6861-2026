@@ -38,8 +38,9 @@ public class ShooterSubsystem extends SubsystemBase {
 
     private double dashboardTargetRPM = 5000.0; // was 4000.0
     private double idleRPM = 1500.0;
-    private double rpmStep = 50.0;
+    private double rpmStep = 100.0;
     private boolean idleEnabled = true;
+    private double kA = 0.06; 
 
     public ShooterSubsystem() {
         leftMotor = new TalonFX(Ports.kShooterLeft, Ports.kCANivoreCANBus);
@@ -135,6 +136,16 @@ public class ShooterSubsystem extends SubsystemBase {
         });
     }
 
+    private void applyKA(double newKA) {
+        kA = newKA;
+        final Slot0Configs slot0 = new Slot0Configs();
+        for (final TalonFX motor : motors) {
+            motor.getConfigurator().refresh(slot0);
+            slot0.withKA(kA);
+            motor.getConfigurator().apply(slot0);
+        }
+    }
+
     public void incrementTargetRPM() {
         dashboardTargetRPM += rpmStep;
     }
@@ -170,5 +181,6 @@ public class ShooterSubsystem extends SubsystemBase {
         builder.addDoubleProperty("Shooter Idle RPM", () -> idleRPM, value -> idleRPM = value);
         builder.addDoubleProperty("Shooter RPM Step", () -> rpmStep, value -> rpmStep = value);
         builder.addBooleanProperty("Shooter Idle Enabled", () -> idleEnabled, value -> idleEnabled = value);
+        builder.addDoubleProperty("Shooter kA", () -> kA, this::applyKA);
     }
 }

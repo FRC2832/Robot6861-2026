@@ -173,6 +173,21 @@ public class IntakeSubsystem extends SubsystemBase {
     // HYBRID APPROACH: gravity-drop for intake, PID only for upward moves
     // Old PID-driven commands are commented out below each new version
 
+    public Command deployCommand() {
+        return Commands.sequence(
+            runOnce(() -> {
+                if (pivotMotor.getPosition().getValue().in(Degrees) > 30) {
+                    setPivotPercentOutput(-0.15);
+                }
+            }),
+            Commands.waitSeconds(1.0),
+            runOnce(() -> {
+                seedPosition(0);
+                setPivotPercentOutput(0);
+            })
+        );
+    }
+
     public Command intakeCommand() {
         return Commands.sequence(
             runOnce(() -> {
@@ -183,7 +198,7 @@ public class IntakeSubsystem extends SubsystemBase {
             }),
             Commands.waitSeconds(1.0),  // was 1.5 - too fast TODO: tune — minimum time to ensure arm settles on bumpers
             runOnce(() -> {
-                seedPosition(0);         // arm is down, reset encoder reference
+                seedPosition(0);         // intake is down, reset encoder reference
                 setPivotPercentOutput(0); // stop nudging, arm is resting on bumpers
             }),
             Commands.idle()  // keep running until trigger released

@@ -4,8 +4,11 @@ import static frc.robot.generated.ChoreoTraj.CenterPickup;
 import static frc.robot.generated.ChoreoTraj.CornerHubBump;
 import static frc.robot.generated.ChoreoTraj.HubLongStraightBack;
 import static frc.robot.generated.ChoreoTraj.HubShortStraightBack;
-import static frc.robot.generated.ChoreoTraj.HubtoDepot;
+
 import static frc.robot.generated.ChoreoTraj.NoMove;
+import static frc.robot.generated.ChoreoTraj.DepotToShoot;
+import static frc.robot.generated.ChoreoTraj.TrenchToDepotFast;
+import static frc.robot.generated.ChoreoTraj.TrenchToDepotSlow;
 
 import choreo.auto.AutoChooser;
 import choreo.auto.AutoFactory;
@@ -68,7 +71,8 @@ public final class AutoRoutines {
         autoChooser.addRoutine("Hub Short Shot Back", this::hubShortShotAuton);
         autoChooser.addRoutine("Hub Long Shot Back", this::hubLongShotAuton);
         autoChooser.addRoutine("Corner Hub 2 Center", this::cornerHubCenterAuton);
-        autoChooser.addRoutine("Hub To Depot", this::hubToDepotAuton);
+        autoChooser.addRoutine("Trench To Depot", this::trenchToDepotAuton);
+
         SmartDashboard.putData("Auto Chooser", autoChooser);
         RobotModeTriggers.autonomous().whileTrue(autoChooser.selectedCommandScheduler());
     }
@@ -81,20 +85,17 @@ public final class AutoRoutines {
         routine.active().onTrue(
             Commands.sequence(
                 // Shoot all fuel into hub
-                //subsystemCommands.hubShotAuton().withTimeout(5),
+                //subsystemCommands.hubShotAuton().withTimeout(3.3),
                 // Drive straight back
                 driveBack.resetOdometry(),
-                // Drive back and raise climber arms at the same time
-                Commands.parallel(
-                    driveBack.cmd(),
-                    hanger.positionCommand(HangerSubsystem.Position.EXTEND_HOPPER)
-                )
+                // Drive back
+                driveBack.cmd()
             )
         );
         return routine;
     }
 
-    
+
     private AutoRoutine hubShortShotAuton() {
         final AutoRoutine routine = autoFactory.newRoutine("Hub Short Shot Back");
         final AutoTrajectory driveBack = HubShortStraightBack.asAutoTraj(routine);
@@ -102,14 +103,11 @@ public final class AutoRoutines {
         routine.active().onTrue(
             Commands.sequence(
                 // Shoot all fuel into hub
-                subsystemCommands.hubShotAuton().withTimeout(5),
+                subsystemCommands.hubShotAuton().withTimeout(3.3),
                 // Drive straight back
                 driveBack.resetOdometry(),
-                // Drive back and raise climber arms at the same time
-                Commands.parallel(
-                    driveBack.cmd(),
-                    hanger.positionCommand(HangerSubsystem.Position.EXTEND_HOPPER)
-                )
+                // Drive back
+                driveBack.cmd()
             )
         );
 
@@ -127,14 +125,11 @@ public final class AutoRoutines {
         routine.active().onTrue(
             Commands.sequence(
                 // Shoot all fuel into hub
-                subsystemCommands.hubShotAuton().withTimeout(5),
+                subsystemCommands.hubShotAuton().withTimeout(3.3),
                 // Need it to follow the trajectory here.... how to do that?
                 driveBump.resetOdometry(),
-                // Drive back and raise climber arms at the same time
-                Commands.parallel(
-                    driveBump.cmd(),
-                    hanger.positionCommand(HangerSubsystem.Position.EXTEND_HOPPER)
-                ),
+                // Drive to bump
+                driveBump.cmd(),
                 // Drive to center and pick up fuel
                 Commands.parallel(
                     centerPickup.cmd(),
@@ -154,14 +149,11 @@ public final class AutoRoutines {
         routine.active().onTrue(
             Commands.sequence(
                 // Shoot all fuel into hub
-                subsystemCommands.hubShotAuton().withTimeout(5),
+                subsystemCommands.hubShotAuton().withTimeout(3.3),
                 // Drive straight back
                 driveBack.resetOdometry(),
-                // Drive back and raise climber arms at the same time
-                Commands.parallel(
-                    driveBack.cmd(),
-                    hanger.positionCommand(HangerSubsystem.Position.EXTEND_HOPPER)
-                )
+                // Drive back
+                driveBack.cmd()
             )
         );
 
@@ -169,30 +161,30 @@ public final class AutoRoutines {
     }
 
 
-    private AutoRoutine hubToDepotAuton() {
-        final AutoRoutine routine = autoFactory.newRoutine("Hub To Depot");
-        final AutoTrajectory driveToDepot = HubtoDepot.asAutoTraj(routine);
-        //TODO: Create DepotToHub trajectory in Choreo, then uncomment below
-        //final AutoTrajectory driveToHub = DepotToHub.asAutoTraj(routine);
+    private AutoRoutine trenchToDepotAuton() {
+        final AutoRoutine routine = autoFactory.newRoutine("Trench To Depot");
+        final AutoTrajectory driveToDepotFast = TrenchToDepotFast.asAutoTraj(routine);
+        final AutoTrajectory driveToDepotSlow = TrenchToDepotSlow.asAutoTraj(routine);
+        final AutoTrajectory driveToShoot = DepotToShoot.asAutoTraj(routine);
 
         routine.active().onTrue(
             Commands.sequence(
-                // Shoot all fuel into hub
-                subsystemCommands.hubShotAuton().withTimeout(5),
-                // Reset odometry before driving
-                driveToDepot.resetOdometry(),
-                // Drive to depot while extending hopper
+                // Shoot from trench
+                subsystemCommands.trenchShotAuton().withTimeout(3.3),
+                // Lower intake while stationary
+                intake.deployCommand(),
+                // Drive to depot
+                driveToDepotFast.resetOdometry(),
+                driveToDepotFast.cmd(),
+                // Slow approach along wall with rollers running
                 Commands.parallel(
-                    driveToDepot.cmd(),
-                    hanger.positionCommand(HangerSubsystem.Position.EXTEND_HOPPER)
+                    driveToDepotSlow.cmd(),
+                    intake.intakeCommand()
                 ),
-                // Gather fuel at depot
-                intake.intakeCommand().withTimeout(3)
-                //TODO: Uncomment after creating DepotToHub trajectory in Choreo
-                // Drive back to hub center
-                //driveToHub.cmd(),
-                // Shoot gathered fuel
-                //subsystemCommands.hubShotAuton().withTimeout(5)
+                // Drive to sweet spot shooting position
+                driveToShoot.cmd(),
+                // Shoot gathered fuel with agitation
+                subsystemCommands.sweetSpot().withTimeout(3.3)
             )
         );
 
