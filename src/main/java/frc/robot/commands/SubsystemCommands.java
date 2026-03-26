@@ -173,7 +173,7 @@ public final class SubsystemCommands {
             Commands.waitSeconds(0.25), // was .25, lowered to see if we can increase shooting speed
             Commands.parallel(
                 feeder.feedCommand(),
-                Commands.waitSeconds(0.10) // was .125
+                Commands.waitSeconds(1.00) // was .125
                     .andThen(floor.feedCommand().alongWith(intake.agitateCommand()))
             )
         );

@@ -36,8 +36,8 @@ import frc.robot.Ports;
 public class IntakeSubsystem extends SubsystemBase {
     public enum Speed {
         STOP(0),
-        INTAKE(0.5), // TODO: set up at 0.8 for comp!, 0.6 was good to keep temps down
-        REVERSEINTAKE(-0.5); //was -0.3
+        INTAKE(0.60), // TODO: set up at 0.8 for comp!, 0.6 was good to keep temps down
+        REVERSEINTAKE(-0.4); //was -0.3 and -0.5
 
         private final double percentOutput;
 
@@ -55,8 +55,8 @@ public class IntakeSubsystem extends SubsystemBase {
         STOWED(65),
         // INTAKE(12.0), // was -12, -4, was -78 most recently — removed for hybrid gravity-drop approach
         // AGITATE(20),  // was 20, was -50 most recently — replaced with high agitate positions
-        AGITATE_HIGH(45),  // TODO: tune — upper bound of agitate oscillation
-        AGITATE_LOW(30);   // TODO: tune — lower bound of agitate oscillation
+        AGITATE_HIGH(30),  // TODO: tune — upper bound of agitate oscillation
+        AGITATE_LOW(20);   // TODO: tune — lower bound of agitate oscillation
 
         private final double degrees;
 
@@ -168,6 +168,14 @@ public class IntakeSubsystem extends SubsystemBase {
             rollerVoltageRequest
                 .withOutput(speed.voltage())
         );
+    }
+
+    @Override
+    public void periodic() {
+        // Safety net: if no command owns this subsystem, stop the rollers
+        if (getCurrentCommand() == null) {
+            set(Speed.STOP);
+        }
     }
 
     // HYBRID APPROACH: gravity-drop for intake, PID only for upward moves
@@ -291,8 +299,8 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public Command stowCommand() {
         return Commands.sequence(
-            // runOnce(() -> setPivotPercentOutput(0.4)), // was 0.1
-            // Commands.waitUntil(() -> pivotMotor.getSupplyCurrent().getValue().in(Amps) > 6),
+            runOnce(() -> setPivotPercentOutput(0.4)), // was 0.1
+            Commands.waitUntil(() -> pivotMotor.getSupplyCurrent().getValue().in(Amps) > 6),
             runOnce(() -> set(Position.STOWED)),
             Commands.waitUntil(() -> pivotMotor.getPosition().getValue().in(Degrees) > (Position.STOWED.angle().in(Degrees) - 5)),
             runOnce(() -> isHomed = true)
@@ -312,5 +320,6 @@ public class IntakeSubsystem extends SubsystemBase {
         builder.addDoubleProperty("Roller Stator Current", () -> rollerMotor.getStatorCurrent().getValue().in(Amps), null);
         builder.addDoubleProperty("Pivot Temp (F)", () -> pivotMotor.getDeviceTemp().getValue().in(Fahrenheit), null);
         builder.addDoubleProperty("Roller Temp (F)", () -> rollerMotor.getDeviceTemp().getValue().in(Fahrenheit), null);
+        builder.addDoubleProperty("Roller Applied Volts", () -> rollerMotor.getMotorVoltage().getValue().in(Volts), null);
     }
 }

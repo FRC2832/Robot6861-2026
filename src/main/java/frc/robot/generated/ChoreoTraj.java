@@ -122,8 +122,8 @@ public record ChoreoTraj(
     public static final ChoreoTraj TrenchToDepotFast = new ChoreoTraj(
         "TrenchToDepotFast",
         OptionalInt.empty(),
-        1.62516,
-        new Pose2d(3.62473, 6.18758, Rotation2d.fromRadians(-1.09841)),
+        1.55892,
+        new Pose2d(3.52473, 6.18758, Rotation2d.fromRadians(-1.09841)),
         new Pose2d(1.43534, 5.94675, Rotation2d.fromRadians(3.14159))
     );
     public static final ChoreoTraj TrenchToDepotSlow = new ChoreoTraj(
