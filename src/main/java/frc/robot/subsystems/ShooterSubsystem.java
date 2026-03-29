@@ -40,7 +40,7 @@ public class ShooterSubsystem extends SubsystemBase {
     private double idleRPM = 1500.0;
     private double rpmStep = 100.0;
     private boolean idleEnabled = true;
-    private double kA = 0.3; 
+    private double kA = 0.4; 
 
     public ShooterSubsystem() {
         leftMotor = new TalonFX(Ports.kShooterLeft, Ports.kCANivoreCANBus);

@@ -1,12 +1,13 @@
 package frc.robot.commands;
 
+import static frc.robot.generated.ChoreoTraj.Bump2CornerHubShot;
 import static frc.robot.generated.ChoreoTraj.CenterPickup;
 import static frc.robot.generated.ChoreoTraj.CornerHubBump;
+import static frc.robot.generated.ChoreoTraj.Depot2Shoot;
 import static frc.robot.generated.ChoreoTraj.HubLongStraightBack;
 import static frc.robot.generated.ChoreoTraj.HubShortStraightBack;
 
 import static frc.robot.generated.ChoreoTraj.NoMove;
-import static frc.robot.generated.ChoreoTraj.DepotToShoot;
 import static frc.robot.generated.ChoreoTraj.TrenchToDepotFast;
 import static frc.robot.generated.ChoreoTraj.TrenchToDepotSlow;
 
@@ -72,6 +73,7 @@ public final class AutoRoutines {
         autoChooser.addRoutine("Hub Long Shot Back", this::hubLongShotAuton);
         autoChooser.addRoutine("Corner Hub 2 Center", this::cornerHubCenterAuton);
         autoChooser.addRoutine("Trench To Depot", this::trenchToDepotAuton);
+        autoChooser.addRoutine("Bump To Center", this::bumpToCenterAuton);
 
         SmartDashboard.putData("Auto Chooser", autoChooser);
         RobotModeTriggers.autonomous().whileTrue(autoChooser.selectedCommandScheduler());
@@ -107,7 +109,10 @@ public final class AutoRoutines {
                 // Drive straight back
                 driveBack.resetOdometry(),
                 // Drive back
-                driveBack.cmd()
+                Commands.sequence(
+                    driveBack.cmd(),
+                    intake.deployCommand() 
+                )
             )
         );
 
@@ -126,7 +131,7 @@ public final class AutoRoutines {
             Commands.sequence(
                 // Shoot all fuel into hub
                 subsystemCommands.hubShotAuton().withTimeout(3.3),
-                // Need it to follow the trajectory here.... how to do that?
+        
                 driveBump.resetOdometry(),
                 // Drive to bump
                 driveBump.cmd(),
@@ -142,6 +147,42 @@ public final class AutoRoutines {
     }
 
 
+
+    private AutoRoutine bumpToCenterAuton() {
+        final AutoRoutine routine = autoFactory.newRoutine("Bump 2 Center");
+        final AutoTrajectory driveBump = CornerHubBump.asAutoTraj(routine);
+        final AutoTrajectory centerPickup = CenterPickup.asAutoTraj(routine);
+        final AutoTrajectory center2HubSHot = Bump2CornerHubShot.asAutoTraj(routine);
+
+
+        routine.active().onTrue(
+            Commands.sequence(
+                // Shoot all fuel into hub
+        
+                driveBump.resetOdometry(),
+                // Drive over bump
+                driveBump.cmd(),
+                // Drive to center and pick up fuel
+                Commands.parallel(
+                    centerPickup.cmd(),
+                    intake.intakeCommand().withTimeout(3.0)
+                ),
+
+                center2HubSHot.cmd(),
+                
+
+                //drive to corner of hub and shoot
+                subsystemCommands.hubShotAuton().withTimeout(6.0)
+                
+            )
+        );
+
+        return routine;
+    }
+
+
+
+    
     private AutoRoutine hubLongShotAuton() {
         final AutoRoutine routine = autoFactory.newRoutine("Hub Long Shot Back");
         final AutoTrajectory driveBack = HubLongStraightBack.asAutoTraj(routine);
@@ -153,7 +194,10 @@ public final class AutoRoutines {
                 // Drive straight back
                 driveBack.resetOdometry(),
                 // Drive back
-                driveBack.cmd()
+                Commands.sequence(
+                    driveBack.cmd(),
+                    intake.deployCommand()  //was intakeCommand
+                )
             )
         );
 
@@ -165,7 +209,7 @@ public final class AutoRoutines {
         final AutoRoutine routine = autoFactory.newRoutine("Trench To Depot");
         final AutoTrajectory driveToDepotFast = TrenchToDepotFast.asAutoTraj(routine);
         final AutoTrajectory driveToDepotSlow = TrenchToDepotSlow.asAutoTraj(routine);
-        final AutoTrajectory driveToShoot = DepotToShoot.asAutoTraj(routine);
+        final AutoTrajectory driveToShoot = Depot2Shoot.asAutoTraj(routine);
 
         routine.active().onTrue(
             Commands.sequence(
@@ -184,7 +228,7 @@ public final class AutoRoutines {
                 // Drive to sweet spot shooting position
                 driveToShoot.cmd(),
                 // Shoot gathered fuel with agitation
-                subsystemCommands.sweetSpot().withTimeout(3.3)
+                subsystemCommands.sweetSpot().withTimeout(6.0)
             )
         );
 

@@ -55,8 +55,10 @@ public class IntakeSubsystem extends SubsystemBase {
         STOWED(65),
         // INTAKE(12.0), // was -12, -4, was -78 most recently — removed for hybrid gravity-drop approach
         // AGITATE(20),  // was 20, was -50 most recently — replaced with high agitate positions
-        AGITATE_HIGH(30),  // TODO: tune — upper bound of agitate oscillation
-        AGITATE_LOW(20);   // TODO: tune — lower bound of agitate oscillation
+        AGITATE_HIGH(25),  // TODO: was 30 tune — upper bound of agitate oscillation
+        AGITATE_LOW(15),   // TODO: was 20 tune — lower bound of agitate oscillation
+        INTAKE_DOWN(0);
+
 
         private final double degrees;
 
@@ -170,14 +172,6 @@ public class IntakeSubsystem extends SubsystemBase {
         );
     }
 
-    @Override
-    public void periodic() {
-        // Safety net: if no command owns this subsystem, stop the rollers
-        if (getCurrentCommand() == null) {
-            set(Speed.STOP);
-        }
-    }
-
     // HYBRID APPROACH: gravity-drop for intake, PID only for upward moves
     // Old PID-driven commands are commented out below each new version
 
@@ -200,7 +194,7 @@ public class IntakeSubsystem extends SubsystemBase {
         return Commands.sequence(
             runOnce(() -> {
                 if (pivotMotor.getPosition().getValue().in(Degrees) > 30) {
-                    setPivotPercentOutput(-0.15);  // was -0.2 - too much nudge only if arm is up, skip if already down
+                    setPivotPercentOutput(-0.16);  // was -0.2 - too much nudge only if arm is up, skip if already down
                 }
                 set(Speed.INTAKE);
             }),
@@ -214,7 +208,8 @@ public class IntakeSubsystem extends SubsystemBase {
         .finallyDo(() -> {
             setPivotPercentOutput(0);  // stop pivot nudge
             set(Speed.STOP);
-        });
+        })
+        .withName("Intake");
     }
     // OLD intakeCommand — PID drove pivot down (chain slack/skip issues):
     // public Command intakeCommand() {
@@ -230,11 +225,11 @@ public class IntakeSubsystem extends SubsystemBase {
     public Command reverseIntakeCommand() {
         return startEnd(
             () -> {
-                set(Position.AGITATE_LOW);
+                set(Position.INTAKE_DOWN);
                 set(Speed.REVERSEINTAKE);
             },
             () -> set(Speed.STOP)
-        );
+        ).withName("ReverseIntake");
     }
     // OLD reverseIntakeCommand:
     // public Command reverseIntakeCommand() {
@@ -263,7 +258,8 @@ public class IntakeSubsystem extends SubsystemBase {
             .handleInterrupt(() -> {
                 setPivotPercentOutput(0);  // coast down
                 set(Speed.STOP);
-            });
+            })
+            .withName("Agitate");
     }
     // OLD agitateCommand — oscillated in the low/chain-slack zone:
     // public Command agitateCommand() {
@@ -299,7 +295,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public Command stowCommand() {
         return Commands.sequence(
-            runOnce(() -> setPivotPercentOutput(0.4)), // was 0.1
+            runOnce(() -> setPivotPercentOutput(0.375)), // was 0.4
             Commands.waitUntil(() -> pivotMotor.getSupplyCurrent().getValue().in(Amps) > 6),
             runOnce(() -> set(Position.STOWED)),
             Commands.waitUntil(() -> pivotMotor.getPosition().getValue().in(Degrees) > (Position.STOWED.angle().in(Degrees) - 5)),
@@ -311,10 +307,10 @@ public class IntakeSubsystem extends SubsystemBase {
 
     @Override
     public void initSendable(SendableBuilder builder) {
-        builder.addStringProperty("Command", () -> getCurrentCommand() != null ? getCurrentCommand().getName() : "null", null);
-        builder.addDoubleProperty("Angle (degrees)", () -> pivotMotor.getPosition().getValue().in(Degrees), null);
-        builder.addDoubleProperty("Speed (rpm)", () -> pivotMotor.getVelocity().getValue().in(RPM), null);
-        builder.addDoubleProperty("RPM", () -> rollerMotor.getVelocity().getValue().in(RPM), null);
+        builder.addStringProperty("Intake Command", () -> getCurrentCommand() != null ? getCurrentCommand().getName() : "null", null);
+        builder.addDoubleProperty("Pivot Angle (degrees)", () -> pivotMotor.getPosition().getValue().in(Degrees), null);
+        builder.addDoubleProperty("Pivot Speed (rpm)", () -> pivotMotor.getVelocity().getValue().in(RPM), null);
+        builder.addDoubleProperty("Roller RPM", () -> rollerMotor.getVelocity().getValue().in(RPM), null);
         builder.addDoubleProperty("Pivot Supply Current", () -> pivotMotor.getSupplyCurrent().getValue().in(Amps), null);
         builder.addDoubleProperty("Roller Supply Current", () -> rollerMotor.getSupplyCurrent().getValue().in(Amps), null);
         builder.addDoubleProperty("Roller Stator Current", () -> rollerMotor.getStatorCurrent().getValue().in(Amps), null);

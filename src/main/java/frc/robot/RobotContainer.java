@@ -109,6 +109,7 @@ public class RobotContainer {
             MaxAngularRate,
             this::getSpeedMultiplier
         );
+        
         drivetrain.setDefaultCommand(headingLockDrive);
 
         //Limelight disabled to reduce CPU usage
@@ -126,6 +127,8 @@ public class RobotContainer {
         //     .ignoringDisable(true)
         // );
 
+        intakeSubsystem.setDefaultCommand(intakeSubsystem.run(() -> intakeSubsystem.set(IntakeSubsystem.Speed.STOP)).withName("IntakeIdle"));
+        
         shooterSubsystem.setDefaultCommand(shooterSubsystem.idleCommand());
 
         hoodSubsystem.setDefaultCommand(

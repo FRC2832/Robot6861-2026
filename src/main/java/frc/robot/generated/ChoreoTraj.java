@@ -73,8 +73,8 @@ public record ChoreoTraj(
     public static final ChoreoTraj CenterPickup = new ChoreoTraj(
         "CenterPickup",
         OptionalInt.empty(),
-        1.58778,
-        new Pose2d(7.84172, 6.91912, Rotation2d.fromRadians(-1.6263)),
+        5.23785,
+        new Pose2d(7.84172, 6.91912, Rotation2d.fromRadians(-1.5708)),
         new Pose2d(6.1266, 4.85318, Rotation2d.fromRadians(-1.72345))
     );
     public static final ChoreoTraj NoMove = new ChoreoTraj(
@@ -108,9 +108,9 @@ public record ChoreoTraj(
     public static final ChoreoTraj Bump2Center = new ChoreoTraj(
         "Bump2Center",
         OptionalInt.empty(),
-        2.82513,
-        new Pose2d(3.5929, 4.07358, Rotation2d.fromRadians(0)),
-        new Pose2d(5.90801, 5.84246, Rotation2d.fromRadians(0))
+        1.66863,
+        new Pose2d(3.51775, 5.39547, Rotation2d.fromRadians(-1.5708)),
+        new Pose2d(7.84172, 6.91912, Rotation2d.fromRadians(-1.5708))
     );
     public static final ChoreoTraj CornerHubBump = new ChoreoTraj(
         "CornerHubBump",
@@ -122,23 +122,46 @@ public record ChoreoTraj(
     public static final ChoreoTraj TrenchToDepotFast = new ChoreoTraj(
         "TrenchToDepotFast",
         OptionalInt.empty(),
-        1.55892,
+        1.74774,
         new Pose2d(3.52473, 6.18758, Rotation2d.fromRadians(-1.09841)),
-        new Pose2d(1.43534, 5.94675, Rotation2d.fromRadians(3.14159))
+        new Pose2d(1.39155, 7.26476, Rotation2d.fromRadians(-1.5708))
     );
     public static final ChoreoTraj TrenchToDepotSlow = new ChoreoTraj(
         "TrenchToDepotSlow",
         OptionalInt.empty(),
-        0.35483,
-        new Pose2d(1.06314, 5.92485, Rotation2d.fromRadians(3.14159)),
-        new Pose2d(0.75496, 5.92485, Rotation2d.fromRadians(-3.13467))
+        2.76703,
+        new Pose2d(1.39155, 7.26476, Rotation2d.fromRadians(-1.5708)),
+        new Pose2d(0.38443, 6.10438, Rotation2d.fromRadians(-1.5708))
     );
-    public static final ChoreoTraj DepotToShoot = new ChoreoTraj(
-        "DepotToShoot",
+    /** ERROR: Can only use letters, 0-9, and _. Can't use $. Rename it in the Choreo app to fix this error. */
+    public static final ChoreoTraj TrenchToDepotSlow$0 = new ChoreoTraj(
+        "TrenchToDepotSlow",
+        OptionalInt.of(0),
+        1.34487,
+        new Pose2d(1.39155, 7.26476, Rotation2d.fromRadians(-1.5708)),
+        new Pose2d(0.42821, 7.1334, Rotation2d.fromRadians(-1.5708))
+    );
+    /** ERROR: Can only use letters, 0-9, and _. Can't use $. Rename it in the Choreo app to fix this error. */
+    public static final ChoreoTraj TrenchToDepotSlow$1 = new ChoreoTraj(
+        "TrenchToDepotSlow",
+        OptionalInt.of(1),
+        1.42216,
+        new Pose2d(0.42821, 7.1334, Rotation2d.fromRadians(-1.5708)),
+        new Pose2d(0.38443, 6.10438, Rotation2d.fromRadians(-1.5708))
+    );
+    public static final ChoreoTraj Depot2Shoot = new ChoreoTraj(
+        "Depot2Shoot",
         OptionalInt.empty(),
-        5.52501,
-        new Pose2d(0.75496, 5.92485, Rotation2d.fromRadians(-3.13467)),
-        new Pose2d(1.58264, 4.57427, Rotation2d.fromRadians(-0.41241))
+        1.30415,
+        new Pose2d(0.38443, 6.10438, Rotation2d.fromRadians(-1.5708)),
+        new Pose2d(1.27859, 5.15289, Rotation2d.fromRadians(-0.2618))
+    );
+    public static final ChoreoTraj Bump2CornerHubShot = new ChoreoTraj(
+        "Bump2CornerHubShot",
+        OptionalInt.empty(),
+        2.29244,
+        new Pose2d(6.1266, 4.85318, Rotation2d.fromRadians(-1.65806)),
+        new Pose2d(3.57373, 4.873, Rotation2d.fromRadians(-0.87266))
     );
 
     /**
@@ -161,7 +184,10 @@ public record ChoreoTraj(
         Map.entry("CornerHubBump", CornerHubBump),
         Map.entry("TrenchToDepotFast", TrenchToDepotFast),
         Map.entry("TrenchToDepotSlow", TrenchToDepotSlow),
-        Map.entry("DepotToShoot", DepotToShoot)
+        Map.entry("TrenchToDepotSlow$0", TrenchToDepotSlow$0),
+        Map.entry("TrenchToDepotSlow$1", TrenchToDepotSlow$1),
+        Map.entry("Depot2Shoot", Depot2Shoot),
+        Map.entry("Bump2CornerHubShot", Bump2CornerHubShot)
     );
 
     /**
