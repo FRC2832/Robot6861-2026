@@ -127,7 +127,7 @@ public class RobotContainer {
         //     .ignoringDisable(true)
         // );
 
-        intakeSubsystem.setDefaultCommand(intakeSubsystem.run(() -> intakeSubsystem.set(IntakeSubsystem.Speed.STOP)).withName("IntakeIdle"));
+        intakeSubsystem.setDefaultCommand(intakeSubsystem.run(() -> intakeSubsystem.stopRollers()).withName("IntakeIdle"));
         
         shooterSubsystem.setDefaultCommand(shooterSubsystem.idleCommand());
 
@@ -218,7 +218,7 @@ public class RobotContainer {
 
         // Intake controls
         operatorController.rightTrigger().whileTrue(
-            intakeSubsystem.intakeCommand().alongWith(floorSubsystem.feedCommand())
+            intakeSubsystem.intakeCommand().alongWith(floorSubsystem.feedCommand()).withName("IntakeAndFeed")
         ); // was leftTrigger, added floor feed
         operatorController.leftTrigger().whileTrue(intakeSubsystem.reverseIntakeCommand());
 

@@ -174,7 +174,7 @@ public final class SubsystemCommands {
             Commands.parallel(
                 feeder.feedCommand(),
                 Commands.waitSeconds(1.00) // was .125
-                    .andThen(floor.feedCommand().alongWith(intake.agitateCommand()))
+                    .andThen(floor.feedCommand().alongWith(intake.agitateCommand()).withName("FeedAndAgitate"))
             )
         );
     }

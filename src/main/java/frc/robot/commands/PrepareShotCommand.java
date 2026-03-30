@@ -32,7 +32,9 @@ public class PrepareShotCommand extends Command {
     );
 
     static {
-        distanceToShotMap.put(Inches.of(52.0), new Shot(3500, 0.12));
+        distanceToShotMap.put(Inches.of(48.0), new Shot(3650, 0.0)); //hubshot
+       // distanceToShotMap.put(Inches.of(52.0), new Shot(3500, 0.12));
+        distanceToShotMap.put(Inches.of(65.0), new Shot(4450, 0.21)); //Sweet spot
         distanceToShotMap.put(Inches.of(114.4), new Shot(4000, 0.3));
         distanceToShotMap.put(Inches.of(165.5), new Shot(4500, 0.48));
     }

@@ -225,6 +225,8 @@ public final class AutoRoutines {
                     driveToDepotSlow.cmd(),
                     intake.intakeCommand()
                 ),
+                // Reset odometry before depot-to-shoot to correct drift
+                driveToShoot.resetOdometry(),
                 // Drive to sweet spot shooting position
                 driveToShoot.cmd(),
                 // Shoot gathered fuel with agitation

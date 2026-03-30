@@ -15,6 +15,7 @@ import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
@@ -172,6 +173,10 @@ public class IntakeSubsystem extends SubsystemBase {
         );
     }
 
+    public void stopRollers() {
+        rollerMotor.setControl(new NeutralOut());
+    }
+
     // HYBRID APPROACH: gravity-drop for intake, PID only for upward moves
     // Old PID-driven commands are commented out below each new version
 
@@ -203,11 +208,11 @@ public class IntakeSubsystem extends SubsystemBase {
                 seedPosition(0);         // intake is down, reset encoder reference
                 setPivotPercentOutput(0); // stop nudging, arm is resting on bumpers
             }),
-            Commands.idle()  // keep running until trigger released
+            run(() -> set(Speed.INTAKE))  // keep commanding rollers every cycle until trigger released
         )
         .finallyDo(() -> {
             setPivotPercentOutput(0);  // stop pivot nudge
-            set(Speed.STOP);
+            stopRollers();
         })
         .withName("Intake");
     }
@@ -223,13 +228,12 @@ public class IntakeSubsystem extends SubsystemBase {
     // }
 
     public Command reverseIntakeCommand() {
-        return startEnd(
-            () -> {
+        return run(() -> {
                 set(Position.INTAKE_DOWN);
                 set(Speed.REVERSEINTAKE);
-            },
-            () -> set(Speed.STOP)
-        ).withName("ReverseIntake");
+            })
+            .finallyDo(() -> stopRollers())
+            .withName("ReverseIntake");
     }
     // OLD reverseIntakeCommand:
     // public Command reverseIntakeCommand() {
@@ -257,7 +261,7 @@ public class IntakeSubsystem extends SubsystemBase {
             )
             .handleInterrupt(() -> {
                 setPivotPercentOutput(0);  // coast down
-                set(Speed.STOP);
+                stopRollers();
             })
             .withName("Agitate");
     }
