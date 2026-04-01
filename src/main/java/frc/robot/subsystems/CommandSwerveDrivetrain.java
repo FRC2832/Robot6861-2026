@@ -51,6 +51,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     /** Swerve request to apply during field-centric path following */
     private final SwerveRequest.ApplyFieldSpeeds pathFieldSpeedsRequest = new SwerveRequest.ApplyFieldSpeeds();
+    private final SwerveRequest.Idle idleRequest = new SwerveRequest.Idle();
     private final PIDController pathXController = new PIDController(10, 0, 0);
     private final PIDController pathYController = new PIDController(10, 0, 0);
     private final PIDController pathThetaController = new PIDController(7, 0, 0);
@@ -207,6 +208,16 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      */
     public Command applyRequest(Supplier<SwerveRequest> request) {
         return run(() -> this.setControl(request.get()));
+    }
+
+    /**
+     * Returns a command that stops the drivetrain by sending an Idle request.
+     * Use this at the end of autonomous trajectories to prevent coasting.
+     *
+     * @return Command that stops the drivetrain
+     */
+    public Command stopCommand() {
+        return runOnce(() -> this.setControl(idleRequest));
     }
 
     /**

@@ -1,6 +1,8 @@
 package frc.robot.commands;
 
-import static frc.robot.generated.ChoreoTraj.Bump2CornerHubShot;
+import static frc.robot.generated.ChoreoTraj.Bump2CornerHubShott;
+import static frc.robot.generated.ChoreoTraj.BumpBack2Center;
+import static frc.robot.generated.ChoreoTraj.Center2Bump;
 import static frc.robot.generated.ChoreoTraj.CenterPickup;
 import static frc.robot.generated.ChoreoTraj.CornerHubBump;
 import static frc.robot.generated.ChoreoTraj.Depot2Shoot;
@@ -150,9 +152,11 @@ public final class AutoRoutines {
 
     private AutoRoutine bumpToCenterAuton() {
         final AutoRoutine routine = autoFactory.newRoutine("Bump 2 Center");
-        final AutoTrajectory driveBump = CornerHubBump.asAutoTraj(routine);
+        final AutoTrajectory driveBump = BumpBack2Center.asAutoTraj(routine);
         final AutoTrajectory centerPickup = CenterPickup.asAutoTraj(routine);
-        final AutoTrajectory center2HubSHot = Bump2CornerHubShot.asAutoTraj(routine);
+        final AutoTrajectory centerToBump = Center2Bump.asAutoTraj(routine);
+        final AutoTrajectory bumpToShoot = Bump2CornerHubShott.asAutoTraj(routine);
+
 
 
         routine.active().onTrue(
@@ -168,13 +172,15 @@ public final class AutoRoutines {
                     intake.intakeCommand().withTimeout(3.0)
                 ),
 
-                center2HubSHot.cmd(),
-                
+                centerToBump.cmd(),
+                bumpToShoot.resetOdometry(),
+                bumpToShoot.cmd(),
+                drivetrain.stopCommand(),
 
                 //drive to corner of hub and shoot
-                subsystemCommands.hubShotAuton().withTimeout(6.0)
-                
+                subsystemCommands.hubShot().withTimeout(6.0)
             )
+                  
         );
 
         return routine;
@@ -223,12 +229,13 @@ public final class AutoRoutines {
                 // Slow approach along wall with rollers running
                 Commands.parallel(
                     driveToDepotSlow.cmd(),
-                    intake.intakeCommand()
+                    intake.intakeCommand().withTimeout(3.0)
                 ),
                 // Reset odometry before depot-to-shoot to correct drift
-                driveToShoot.resetOdometry(),
+                // driveToShoot.resetOdometry(),
                 // Drive to sweet spot shooting position
                 driveToShoot.cmd(),
+                drivetrain.stopCommand(),
                 // Shoot gathered fuel with agitation
                 subsystemCommands.sweetSpot().withTimeout(6.0)
             )

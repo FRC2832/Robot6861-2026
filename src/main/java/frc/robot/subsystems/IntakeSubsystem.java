@@ -16,6 +16,7 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
@@ -35,21 +36,38 @@ import frc.robot.Constants.KrakenX60;
 import frc.robot.Ports;
 
 public class IntakeSubsystem extends SubsystemBase {
+    //public enum Speed {
+       // STOP(0),
+        //INTAKE(0.70), // TODO: set up at 0.8 for comp!, 0.6 was good to keep temps down
+       // REVERSEINTAKE(-0.4); //was -0.3 and -0.5
+
+       // private final double percentOutput;
+
+       // private Speed(double percentOutput) {
+          //  this.percentOutput = percentOutput;
+      //  }
+
+       // public Voltage voltage() {
+           // return Volts.of(percentOutput * 12.0);
+      //  }
+    //}
+
+    // CLOSED-LOOP VELOCITY CONTROL — uncomment this enum and comment out the one above to switch
     public enum Speed {
-        STOP(0),
-        INTAKE(0.60), // TODO: set up at 0.8 for comp!, 0.6 was good to keep temps down
-        REVERSEINTAKE(-0.4); //was -0.3 and -0.5
-
-        private final double percentOutput;
-
-        private Speed(double percentOutput) {
-            this.percentOutput = percentOutput;
-        }
-
-        public Voltage voltage() {
-            return Volts.of(percentOutput * 12.0);
-        }
-    }
+         STOP(0),
+         INTAKE(4800),
+         REVERSEINTAKE(-3000);
+    //
+         private final double rpm;
+    //
+         private Speed(double rpm) {
+             this.rpm = rpm;
+         }
+    
+         public double rps() {
+             return rpm / 60.0;
+         }
+     }
 
     public enum Position {
         HOMED(75),
@@ -80,6 +98,8 @@ public class IntakeSubsystem extends SubsystemBase {
     private final VoltageOut pivotVoltageRequest = new VoltageOut(0);
     private final MotionMagicVoltage pivotMotionMagicRequest = new MotionMagicVoltage(0).withSlot(0);
     private final VoltageOut rollerVoltageRequest = new VoltageOut(0);
+    // CLOSED-LOOP — uncomment when switching to velocity control
+    private final VelocityVoltage rollerVelocityRequest = new VelocityVoltage(0);
 
     private boolean isHomed = false;
 
@@ -134,11 +154,20 @@ public class IntakeSubsystem extends SubsystemBase {
             )
             .withCurrentLimits(
                 new CurrentLimitsConfigs()
-                    .withStatorCurrentLimit(Amps.of(60)) //was 70a
+                    .withStatorCurrentLimit(Amps.of(40)) //was 60a
                     .withStatorCurrentLimitEnable(true)
-                    .withSupplyCurrentLimit(Amps.of(50)) //was 60a
+                    .withSupplyCurrentLimit(Amps.of(30)) //was 50a
                     .withSupplyCurrentLimitEnable(true)
             );
+            // CLOSED-LOOP — uncomment this Slot0 config when switching to velocity control
+            config.withSlot0(
+                 new Slot0Configs()
+                     .withKP(0)       // start at 0, tune up after kV is dialed in
+                     .withKI(0)
+                     .withKD(0)
+                     .withKV(0.13)    // feedforward: ~12V / 100rps — tune this first
+                     .withKS(0)       // static friction, tune after kV
+             );
         rollerMotor.getConfigurator().apply(config);
     }
 
@@ -167,9 +196,14 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public void set(Speed speed) {
+      //  rollerMotor.setControl(
+        //    rollerVoltageRequest
+          //      .withOutput(speed.voltage())
+        //);
+        // CLOSED-LOOP — uncomment below and comment out above when switching to velocity control
         rollerMotor.setControl(
-            rollerVoltageRequest
-                .withOutput(speed.voltage())
+             rollerVelocityRequest
+                 .withVelocity(speed.rps())
         );
     }
 

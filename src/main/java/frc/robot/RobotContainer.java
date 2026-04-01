@@ -6,6 +6,7 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
@@ -81,6 +82,7 @@ public class RobotContainer {
 
     public RobotContainer() {
         configureBindings();
+        SignalLogger.stop();
         autoRoutines.configure();
     }
 
@@ -112,20 +114,20 @@ public class RobotContainer {
         
         drivetrain.setDefaultCommand(headingLockDrive);
 
-        //Limelight disabled to reduce CPU usage
-        //limelightSubsystem.setDefaultCommand(
-        //    limelightSubsystem.run(() -> {
-        //     var measurement = limelightSubsystem.getMeasurement(drivetrain.getState().Pose);
-        //     measurement.ifPresent(m ->
-        //         drivetrain.addVisionMeasurement(
-        //            m.poseEstimate.pose,
-        //            m.poseEstimate.timestampSeconds,
-        //            m.standardDeviations
-        //             )
-        //         );
-        //     })
-        //     .ignoringDisable(true)
-        // );
+        //Expecting much reduced CPU usage as LL 4 processes on camera vs on roborio
+        limelightSubsystem.setDefaultCommand(
+            limelightSubsystem.run(() -> {
+             var measurement = limelightSubsystem.getMeasurement(drivetrain.getState().Pose);
+             measurement.ifPresent(m ->
+                 drivetrain.addVisionMeasurement(
+                    m.poseEstimate.pose,
+                    m.poseEstimate.timestampSeconds,
+                    m.standardDeviations
+                     )
+                 );
+             })
+             .ignoringDisable(true)
+         );
 
         intakeSubsystem.setDefaultCommand(intakeSubsystem.run(() -> intakeSubsystem.stopRollers()).withName("IntakeIdle"));
         
@@ -150,7 +152,7 @@ public class RobotContainer {
 
         // DISABLED: USB camera on roboRIO drew too much current, causing the roboRIO to brown out and shut down the robot.
         // Use PhotonVision on a coprocessor instead for driver camera.
-        //driverCam = CameraServer.startAutomaticCapture("Driver Cam", 0);
+        // driverCam = CameraServer.startAutomaticCapture("Driver Cam", 0);
         //driverCam.setResolution(640, 480);
         //driverCam.setFPS(20);
 
@@ -193,8 +195,8 @@ public class RobotContainer {
            // .onTrue(intakeSubsystem.homingCommand())
            // .onTrue(hangerSubsystem.homingCommand());
 
-        // Aim and shoot disabled - turns wrong direction - might be due to Pigeon orientation
-        driverController.rightTrigger().whileTrue(subsystemCommands.aimAndShoot());
+        // Vision shoot - driver aims, vision sets RPM + hood based on Limelight ta
+        driverController.rightTrigger().whileTrue(subsystemCommands.visionShoot());
         driverController.x().whileTrue(subsystemCommands.shootManually())
             .onFalse(subsystemCommands.briefReverse());
 

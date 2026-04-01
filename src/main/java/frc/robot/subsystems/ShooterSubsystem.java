@@ -37,10 +37,10 @@ public class ShooterSubsystem extends SubsystemBase {
     private final VoltageOut voltageRequest = new VoltageOut(0);
 
     private double dashboardTargetRPM = 5000.0; // was 4000.0
-    private double idleRPM = 1500.0;
+    private double idleRPM = 1200.0; // was 1500rpm
     private double rpmStep = 100.0;
     private boolean idleEnabled = true;
-    private double kA = 0.5; 
+    private double kA = 0.55; 
 
     public ShooterSubsystem() {
         leftMotor = new TalonFX(Ports.kShooterLeft, Ports.kCANivoreCANBus);

@@ -69,16 +69,25 @@ public final class SubsystemCommands {
         );
     }
 
-    public Command aimAndShoot() {
-        final AimAndDriveCommand aimAndDriveCommand = new AimAndDriveCommand(swerve, forwardInput, leftInput);
-        final PrepareShotCommand prepareShotCommand = new PrepareShotCommand(shooter, hood, () -> swerve.getState().Pose);
+    // public Command aimAndShoot() {
+    //     final AimAndDriveCommand aimAndDriveCommand = new AimAndDriveCommand(swerve, forwardInput, leftInput);
+    //     final PrepareShotCommand prepareShotCommand = new PrepareShotCommand(shooter, hood, () -> swerve.getState().Pose);
+    //     return Commands.parallel(
+    //         aimAndDriveCommand,
+    //         Commands.waitSeconds(0.25)
+    //             .andThen(prepareShotCommand),
+    //         Commands.waitUntil(() -> aimAndDriveCommand.isAimed() && prepareShotCommand.isReadyToShoot())
+    //             .andThen(feed().withName("Aim Feed"))
+    //     ).withName("Aim And Shoot");
+    // }
+
+    public Command visionShoot() {
+        final VisionShotCommand visionShotCommand = new VisionShotCommand(shooter, hood);
         return Commands.parallel(
-            aimAndDriveCommand,
-            Commands.waitSeconds(0.25)
-                .andThen(prepareShotCommand),
-            Commands.waitUntil(() -> aimAndDriveCommand.isAimed() && prepareShotCommand.isReadyToShoot())
-                .andThen(feed().withName("Aim Feed"))
-        ).withName("Aim And Shoot");
+            visionShotCommand,
+            Commands.waitUntil(visionShotCommand::isReadyToShoot)
+                .andThen(feed().withName("Vision Feed"))
+        ).withName("Vision Shoot");
     }
 
     public Command shootManually() {

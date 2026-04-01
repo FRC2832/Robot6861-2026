@@ -64,7 +64,7 @@ public class AimAndDriveCommand extends Command {
         //final Rotation2d hubDirectionInOperatorPerspective = hubDirectionInBlueAlliancePerspective.rotateBy(swerve.getOperatorForwardDirection());
         //return hubDirectionInOperatorPerspective;
 
-         return hubPosition.minus(robotPosition).getAngle(); // no rotateBy here
+        return hubPosition.minus(robotPosition).getAngle(); // no rotateBy here
     }
 
     @Override
