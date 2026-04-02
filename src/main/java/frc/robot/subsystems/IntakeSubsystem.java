@@ -284,11 +284,11 @@ public class IntakeSubsystem extends SubsystemBase {
         return runOnce(() -> set(Speed.INTAKE))
             .andThen(
                 Commands.sequence(
-                    runOnce(() -> set(Position.AGITATE_LOW)),
+                    runOnce(() -> set(Position.AGITATE_HIGH)), //was low
                     Commands.waitUntil(this::isPositionWithinTolerance),
                     runOnce(() -> set(Speed.INTAKE)), //tried reverseintake speed, but they went out
                    
-                    runOnce(() -> set(Position.AGITATE_HIGH)),
+                    runOnce(() -> set(Position.AGITATE_LOW)), //was high
                     Commands.waitUntil(this::isPositionWithinTolerance)
                 )
                 .repeatedly()

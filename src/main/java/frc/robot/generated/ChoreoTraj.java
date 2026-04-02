@@ -27,7 +27,7 @@ public record ChoreoTraj(
     public static final ChoreoTraj Bump2Center = new ChoreoTraj(
         "Bump2Center",
         OptionalInt.empty(),
-        1.44157,
+        1.44385,
         new Pose2d(3.73142, 5.17896, Rotation2d.fromRadians(0)),
         new Pose2d(7.84172, 6.91912, Rotation2d.fromRadians(-1.5708))
     );
@@ -177,6 +177,20 @@ public record ChoreoTraj(
         new Pose2d(0.42821, 7.1334, Rotation2d.fromRadians(-1.5708)),
         new Pose2d(0.38443, 6.10438, Rotation2d.fromRadians(-1.5708))
     );
+    public static final ChoreoTraj Bump2ShootEndwithTurn = new ChoreoTraj(
+        "Bump2ShootEndwithTurn",
+        OptionalInt.empty(),
+        0.62385,
+        new Pose2d(3.1575, 4.5113, Rotation2d.fromRadians(-0.48869)),
+        new Pose2d(2.54044, 5.07147, Rotation2d.fromRadians(3.14159))
+    );
+    public static final ChoreoTraj Depot2ShootEndTurn = new ChoreoTraj(
+        "Depot2ShootEndTurn",
+        OptionalInt.empty(),
+        0.98241,
+        new Pose2d(1.68911, 4.98495, Rotation2d.fromRadians(-0.40143)),
+        new Pose2d(1.66621, 5.9147, Rotation2d.fromRadians(3.14159))
+    );
 
     /**
      * A map between trajectory names and their corresponding data.
@@ -203,7 +217,9 @@ public record ChoreoTraj(
         Map.entry("TrenchToDepotFast", TrenchToDepotFast),
         Map.entry("TrenchToDepotSlow", TrenchToDepotSlow),
         Map.entry("TrenchToDepotSlow$0", TrenchToDepotSlow$0),
-        Map.entry("TrenchToDepotSlow$1", TrenchToDepotSlow$1)
+        Map.entry("TrenchToDepotSlow$1", TrenchToDepotSlow$1),
+        Map.entry("Bump2ShootEndwithTurn", Bump2ShootEndwithTurn),
+        Map.entry("Depot2ShootEndTurn", Depot2ShootEndTurn)
     );
 
     /**

@@ -74,7 +74,11 @@ public class RobotContainer {
     private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
 
     // Command instantiation
-    private final SubsystemCommands subsystemCommands = new SubsystemCommands(drivetrain, intakeSubsystem, floorSubsystem, feederSubsystem, shooterSubsystem, hoodSubsystem, hangerSubsystem);
+    // private final SubsystemCommands subsystemCommands = new SubsystemCommands(drivetrain, intakeSubsystem, floorSubsystem, feederSubsystem, shooterSubsystem, hoodSubsystem, hangerSubsystem);
+    private final SubsystemCommands subsystemCommands = new SubsystemCommands(
+        drivetrain, intakeSubsystem, floorSubsystem, feederSubsystem, shooterSubsystem, hoodSubsystem, hangerSubsystem,
+        driverController::getLeftY, driverController::getLeftX,
+        MaxSpeed, MaxAngularRate, this::getSpeedMultiplier);
     private final AutoRoutines autoRoutines = new AutoRoutines(
         drivetrain, intakeSubsystem, floorSubsystem, feederSubsystem,
         shooterSubsystem, hoodSubsystem, hangerSubsystem, limelightSubsystem
@@ -114,20 +118,21 @@ public class RobotContainer {
         
         drivetrain.setDefaultCommand(headingLockDrive);
 
-        //Expecting much reduced CPU usage as LL 4 processes on camera vs on roborio
-        limelightSubsystem.setDefaultCommand(
-            limelightSubsystem.run(() -> {
-             var measurement = limelightSubsystem.getMeasurement(drivetrain.getState().Pose);
-             measurement.ifPresent(m ->
-                 drivetrain.addVisionMeasurement(
-                    m.poseEstimate.pose,
-                    m.poseEstimate.timestampSeconds,
-                    m.standardDeviations
-                     )
-                 );
-             })
-             .ignoringDisable(true)
-         );
+        // MegaTag pose estimation disabled — not currently used by any commands.
+        // Vision commands use tx/ta/tv directly. Re-enable when pose processing is ready.
+        // limelightSubsystem.setDefaultCommand(
+        //     limelightSubsystem.run(() -> {
+        //      var measurement = limelightSubsystem.getMeasurement(drivetrain.getState().Pose);
+        //      measurement.ifPresent(m ->
+        //          drivetrain.addVisionMeasurement(
+        //             m.poseEstimate.pose,
+        //             m.poseEstimate.timestampSeconds,
+        //             m.standardDeviations
+        //              )
+        //          );
+        //      })
+        //      .ignoringDisable(false)
+        //  );
 
         intakeSubsystem.setDefaultCommand(intakeSubsystem.run(() -> intakeSubsystem.stopRollers()).withName("IntakeIdle"));
         
@@ -149,6 +154,17 @@ public class RobotContainer {
         RobotModeTriggers.disabled().whileTrue(
             drivetrain.applyRequest(() -> idle).ignoringDisable(true)
         );
+
+        // Turn Limelight off when disabled to reduce heat buildup
+        RobotModeTriggers.disabled()
+            .onTrue(Commands.runOnce(() -> {
+                LimelightHelpers.setLEDMode_ForceOff("limelight-dino");
+                LimelightHelpers.setLimelightNTDouble("limelight-dino", "camMode", 1); // driver cam = no processing
+            }).ignoringDisable(true))
+            .onFalse(Commands.runOnce(() -> {
+                LimelightHelpers.setLEDMode_PipelineControl("limelight-dino");
+                LimelightHelpers.setLimelightNTDouble("limelight-dino", "camMode", 0); // vision processing on
+            }));
 
         // DISABLED: USB camera on roboRIO drew too much current, causing the roboRIO to brown out and shut down the robot.
         // Use PhotonVision on a coprocessor instead for driver camera.
@@ -195,8 +211,9 @@ public class RobotContainer {
            // .onTrue(intakeSubsystem.homingCommand())
            // .onTrue(hangerSubsystem.homingCommand());
 
-        // Vision shoot - driver aims, vision sets RPM + hood based on Limelight ta
-        driverController.rightTrigger().whileTrue(subsystemCommands.visionShoot());
+        // Vision aim + shoot - vision sets RPM + hood from ta, and auto-aims rotation from tx
+        // To revert to vision-shoot-only (no aim assist): change to subsystemCommands.visionShoot()
+        driverController.rightTrigger().whileTrue(subsystemCommands.visionAimAndShoot());
         driverController.x().whileTrue(subsystemCommands.shootManually())
             .onFalse(subsystemCommands.briefReverse());
 

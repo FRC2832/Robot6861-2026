@@ -23,6 +23,9 @@ public final class SubsystemCommands {
 
     private final DoubleSupplier forwardInput;
     private final DoubleSupplier leftInput;
+    private final double maxSpeed;
+    private final double maxAngularRate;
+    private final DoubleSupplier speedMultiplierSupplier;
 
     public SubsystemCommands(
         CommandSwerveDrivetrain swerve,
@@ -33,7 +36,10 @@ public final class SubsystemCommands {
         HoodSubsystem hood,
         HangerSubsystem hanger,
         DoubleSupplier forwardInput,
-        DoubleSupplier leftInput
+        DoubleSupplier leftInput,
+        double maxSpeed,
+        double maxAngularRate,
+        DoubleSupplier speedMultiplierSupplier
     ) {
         this.swerve = swerve;
         this.intake = intake;
@@ -45,6 +51,9 @@ public final class SubsystemCommands {
 
         this.forwardInput = forwardInput;
         this.leftInput = leftInput;
+        this.maxSpeed = maxSpeed;
+        this.maxAngularRate = maxAngularRate;
+        this.speedMultiplierSupplier = speedMultiplierSupplier;
     }
 
     public SubsystemCommands(
@@ -65,7 +74,10 @@ public final class SubsystemCommands {
             hood,
             hanger,
             () -> 0,
-            () -> 0
+            () -> 0,
+            0,
+            0,
+            () -> 1.0
         );
     }
 
@@ -81,13 +93,39 @@ public final class SubsystemCommands {
     //     ).withName("Aim And Shoot");
     // }
 
-    public Command visionShoot() {
+    // public Command visionShoot() {
+    //     final VisionShotCommand visionShotCommand = new VisionShotCommand(shooter, hood);
+    //     return Commands.parallel(
+    //         visionShotCommand,
+    //         Commands.waitUntil(visionShotCommand::isReadyToShoot)
+    //             .andThen(feed().withName("Vision Feed"))
+    //     ).withName("Vision Shoot");
+    // }
+
+    public Command visionAlignAndShootAuton() {
+        final AutoVisionAlignCommand alignCommand = new AutoVisionAlignCommand(swerve);
         final VisionShotCommand visionShotCommand = new VisionShotCommand(shooter, hood);
         return Commands.parallel(
+            // Start spinning up RPM + hood while aligning
             visionShotCommand,
-            Commands.waitUntil(visionShotCommand::isReadyToShoot)
+            Commands.sequence(
+                alignCommand,
+                Commands.waitUntil(visionShotCommand::isReadyToShoot),
+                feed().withName("Vision Auton Feed")
+            )
+        ).withName("Vision Align And Shoot Auton");
+    }
+
+    public Command visionAimAndShoot() {
+        final VisionAimCommand visionAimCommand = new VisionAimCommand(
+            swerve, forwardInput, leftInput, maxSpeed, maxAngularRate, speedMultiplierSupplier);
+        final VisionShotCommand visionShotCommand = new VisionShotCommand(shooter, hood);
+        return Commands.parallel(
+            visionAimCommand,
+            visionShotCommand,
+            Commands.waitUntil(() -> visionAimCommand.isAimed() && visionShotCommand.isReadyToShoot())
                 .andThen(feed().withName("Vision Feed"))
-        ).withName("Vision Shoot");
+        ).withName("Vision Aim And Shoot");
     }
 
     public Command shootManually() {
@@ -113,15 +151,15 @@ public final class SubsystemCommands {
 
 
     public Command snowPlow() {
-        return Commands.parallel(
+        return Commands.sequence(
             hood.runOnce(() -> hood.setPosition(0.75)),
-            shooter.spinUpCommand(3500), //was 4000rpm
-            Commands.waitSeconds(0.4) // was 0.5, lowered to see if we can increase shooting speed - this is the time for the hood to get to position and shooter to get up to speed
-                .andThen(Commands.parallel(
-                    intake.intakeCommand(),
-                    floor.feedCommand(),
-                    feeder.feedCommand()
-                ).withName("Snow Plow Feed"))
+            Commands.waitUntil(() -> hood.getCurrentPosition() > 0.5),
+            shooter.spinUpCommand(3700), //was 4000rpm
+            Commands.parallel(
+                feeder.feedCommand(),
+                floor.feedCommand(),
+                intake.intakeCommand()
+            ).withName("Snow Plow Feed")
         ).withName("Snow Plow")
         .finallyDo(() -> {
             shooter.stop();
@@ -179,10 +217,10 @@ public final class SubsystemCommands {
 
     private Command feed() {
         return Commands.sequence(
-            Commands.waitSeconds(0.25), // was .25, lowered to see if we can increase shooting speed
+            Commands.waitSeconds(0.20), // was .25, lowered to see if we can increase shooting speed
             Commands.parallel(
                 feeder.feedCommand(),
-                Commands.waitSeconds(1.00) // was .125
+                Commands.waitSeconds(0.25) // was .125, was 1.0
                     .andThen(floor.feedCommand().alongWith(intake.agitateCommand()).withName("FeedAndAgitate"))
             )
         );
