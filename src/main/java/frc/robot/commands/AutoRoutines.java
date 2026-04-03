@@ -12,6 +12,10 @@ import static frc.robot.generated.ChoreoTraj.HubLongStraightBack;
 import static frc.robot.generated.ChoreoTraj.HubShortStraightBack;
 
 import static frc.robot.generated.ChoreoTraj.NoMove;
+import static frc.robot.generated.ChoreoTraj.RightBump2CornerHubShott_copy1;
+import static frc.robot.generated.ChoreoTraj.RightBumpBack2Center;
+import static frc.robot.generated.ChoreoTraj.RightCenter2Bump;
+import static frc.robot.generated.ChoreoTraj.RightCenterPickup;
 import static frc.robot.generated.ChoreoTraj.TrenchToDepotFast;
 import static frc.robot.generated.ChoreoTraj.TrenchToDepotSlow;
 
@@ -77,7 +81,8 @@ public final class AutoRoutines {
         autoChooser.addRoutine("Hub Long Shot Back", this::hubLongShotAuton);
         autoChooser.addRoutine("Corner Hub 2 Center", this::cornerHubCenterAuton);
         autoChooser.addRoutine("Trench To Depot", this::trenchToDepotAuton);
-        autoChooser.addRoutine("Bump To Center", this::bumpToCenterAuton);
+        autoChooser.addRoutine("LeftBump To Center", this::bumpToCenterAuton);
+        autoChooser.addRoutine("RightBump To Center", this::rightBumpToCenterAuton);
 
         SmartDashboard.putData("Auto Chooser", autoChooser);
         RobotModeTriggers.autonomous().whileTrue(autoChooser.selectedCommandScheduler());
@@ -199,6 +204,54 @@ public final class AutoRoutines {
     }
 
 
+private AutoRoutine rightBumpToCenterAuton() {
+        final AutoRoutine routine = autoFactory.newRoutine("RightBump 2 Center");
+        final AutoTrajectory driveBump = RightBumpBack2Center.asAutoTraj(routine);
+        final AutoTrajectory centerPickup = RightCenterPickup.asAutoTraj(routine);
+        final AutoTrajectory centerToBump = RightCenter2Bump.asAutoTraj(routine);
+        final AutoTrajectory bumpToShoot = RightBump2CornerHubShott_copy1.asAutoTraj(routine);
+        //final AutoTrajectory endTurn = Bump2ShootEndwithTurn.asAutoTraj(routine);
+
+
+
+        routine.active().onTrue(
+            Commands.sequence(
+                // Shoot all fuel into hub
+        
+                driveBump.resetOdometry(),
+                // Drive over bump
+                Commands.parallel(
+                    driveBump.cmd(),
+                    intake.intakeCommand().withTimeout(2.0)
+
+                ),
+                
+                // Drive to center and pick up fuel
+                Commands.parallel(
+                    centerPickup.cmd(),
+                    intake.intakeCommand().withTimeout(3.0)
+                ),
+
+                centerToBump.cmd(),
+                bumpToShoot.resetOdometry(),
+                bumpToShoot.cmd(),
+                drivetrain.stopCommand(),
+
+                //drive to corner of hub, vision align, then shoot
+                //subsystemCommands.hubShot().withTimeout(5.0),
+                subsystemCommands.visionAlignAndShootAuton().withTimeout(5.0),
+                //endTurn.cmd(), //for starting in Field oriented teleop
+                drivetrain.stopCommand()
+
+            )
+                  
+        );
+
+        return routine;
+    }
+
+
+
 
     
     private AutoRoutine hubLongShotAuton() {
@@ -242,7 +295,7 @@ public final class AutoRoutines {
                 // Slow approach along wall with rollers running
                 Commands.parallel(
                     driveToDepotSlow.cmd(),
-                    intake.intakeCommand().withTimeout(3.0)
+                    intake.intakeCommand().withTimeout(6.0)
                 ),
                 // Reset odometry before depot-to-shoot to correct drift
                 // driveToShoot.resetOdometry(),

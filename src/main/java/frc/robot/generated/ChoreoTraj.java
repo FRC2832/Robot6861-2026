@@ -48,14 +48,14 @@ public record ChoreoTraj(
     public static final ChoreoTraj Center2Bump = new ChoreoTraj(
         "Center2Bump",
         OptionalInt.empty(),
-        1.7248,
+        1.52193,
         new Pose2d(6.10122, 5.31184, Rotation2d.fromRadians(0)),
         new Pose2d(3.53209, 5.26755, Rotation2d.fromRadians(0))
     );
     public static final ChoreoTraj CenterPickup = new ChoreoTraj(
         "CenterPickup",
         OptionalInt.empty(),
-        5.3778,
+        8.04868,
         new Pose2d(7.84172, 6.91912, Rotation2d.fromRadians(-1.5708)),
         new Pose2d(6.10122, 5.31184, Rotation2d.fromRadians(0))
     );
@@ -69,8 +69,8 @@ public record ChoreoTraj(
     public static final ChoreoTraj Depot2Shoot = new ChoreoTraj(
         "Depot2Shoot",
         OptionalInt.empty(),
-        1.0809,
-        new Pose2d(0.38443, 6.10438, Rotation2d.fromRadians(-1.55091)),
+        1.04924,
+        new Pose2d(0.4238, 5.85436, Rotation2d.fromRadians(-1.5708)),
         new Pose2d(1.68911, 4.98495, Rotation2d.fromRadians(-0.40143))
     );
     public static final ChoreoTraj HubLongStraightBack = new ChoreoTraj(
@@ -157,25 +157,25 @@ public record ChoreoTraj(
     public static final ChoreoTraj TrenchToDepotSlow = new ChoreoTraj(
         "TrenchToDepotSlow",
         OptionalInt.empty(),
-        4.01677,
+        6.28148,
         new Pose2d(1.39155, 7.26476, Rotation2d.fromRadians(-1.5708)),
-        new Pose2d(0.38443, 6.10438, Rotation2d.fromRadians(-1.5708))
+        new Pose2d(0.42381, 5.85437, Rotation2d.fromRadians(-1.5708))
     );
     /** ERROR: Can only use letters, 0-9, and _. Can't use $. Rename it in the Choreo app to fix this error. */
     public static final ChoreoTraj TrenchToDepotSlow$0 = new ChoreoTraj(
         "TrenchToDepotSlow",
         OptionalInt.of(0),
-        1.95071,
+        2.7627,
         new Pose2d(1.39155, 7.26476, Rotation2d.fromRadians(-1.5708)),
-        new Pose2d(0.42821, 7.1334, Rotation2d.fromRadians(-1.5708))
+        new Pose2d(0.29, 7.25199, Rotation2d.fromRadians(-1.5708))
     );
     /** ERROR: Can only use letters, 0-9, and _. Can't use $. Rename it in the Choreo app to fix this error. */
     public static final ChoreoTraj TrenchToDepotSlow$1 = new ChoreoTraj(
         "TrenchToDepotSlow",
         OptionalInt.of(1),
-        2.0660600000000002,
-        new Pose2d(0.42821, 7.1334, Rotation2d.fromRadians(-1.5708)),
-        new Pose2d(0.38443, 6.10438, Rotation2d.fromRadians(-1.5708))
+        3.51878,
+        new Pose2d(0.29, 7.25199, Rotation2d.fromRadians(-1.5708)),
+        new Pose2d(0.42381, 5.85437, Rotation2d.fromRadians(-1.5708))
     );
     public static final ChoreoTraj Bump2ShootEndwithTurn = new ChoreoTraj(
         "Bump2ShootEndwithTurn",
@@ -190,6 +190,34 @@ public record ChoreoTraj(
         0.98241,
         new Pose2d(1.68911, 4.98495, Rotation2d.fromRadians(-0.40143)),
         new Pose2d(1.66621, 5.9147, Rotation2d.fromRadians(3.14159))
+    );
+    public static final ChoreoTraj RightCenterPickup = new ChoreoTraj(
+        "RightCenterPickup",
+        OptionalInt.empty(),
+        8.4311,
+        new Pose2d(7.85657, 1.11641, Rotation2d.fromRadians(1.5708)),
+        new Pose2d(5.9148, 2.61793, Rotation2d.fromRadians(0))
+    );
+    public static final ChoreoTraj RightBumpBack2Center = new ChoreoTraj(
+        "RightBumpBack2Center",
+        OptionalInt.empty(),
+        3.0885,
+        new Pose2d(3.73142, 2.90896, Rotation2d.fromRadians(0)),
+        new Pose2d(7.85634, 1.11647, Rotation2d.fromRadians(1.5708))
+    );
+    public static final ChoreoTraj RightCenter2Bump = new ChoreoTraj(
+        "RightCenter2Bump",
+        OptionalInt.empty(),
+        1.55818,
+        new Pose2d(5.9147, 2.6179, Rotation2d.fromRadians(0)),
+        new Pose2d(3.2743, 2.54027, Rotation2d.fromRadians(0))
+    );
+    public static final ChoreoTraj RightBump2CornerHubShott_copy1 = new ChoreoTraj(
+        "RightBump2CornerHubShott_copy1",
+        OptionalInt.empty(),
+        0.56866,
+        new Pose2d(3.2743, 2.72148, Rotation2d.fromRadians(0)),
+        new Pose2d(3.30018, 3.4981, Rotation2d.fromRadians(0.43633))
     );
 
     /**
@@ -219,7 +247,11 @@ public record ChoreoTraj(
         Map.entry("TrenchToDepotSlow$0", TrenchToDepotSlow$0),
         Map.entry("TrenchToDepotSlow$1", TrenchToDepotSlow$1),
         Map.entry("Bump2ShootEndwithTurn", Bump2ShootEndwithTurn),
-        Map.entry("Depot2ShootEndTurn", Depot2ShootEndTurn)
+        Map.entry("Depot2ShootEndTurn", Depot2ShootEndTurn),
+        Map.entry("RightCenterPickup", RightCenterPickup),
+        Map.entry("RightBumpBack2Center", RightBumpBack2Center),
+        Map.entry("RightCenter2Bump", RightCenter2Bump),
+        Map.entry("RightBump2CornerHubShott_copy1", RightBump2CornerHubShott_copy1)
     );
 
     /**

@@ -13,6 +13,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -88,6 +89,17 @@ public class RobotContainer {
         configureBindings();
         SignalLogger.stop();
         autoRoutines.configure();
+
+        // Seed vision SmartDashboard entries so they appear in Elastic before commands run
+        SmartDashboard.putBoolean("Vision/HasTarget", false);
+        SmartDashboard.putNumber("Vision/ta", 0);
+        SmartDashboard.putNumber("Vision/TargetRPM", 0);
+        SmartDashboard.putNumber("Vision/TargetHood", 0);
+        SmartDashboard.putBoolean("VisionAim/HasTarget", false);
+        SmartDashboard.putNumber("VisionAim/tx", 0);
+        SmartDashboard.putNumber("VisionAim/RotationRate", 0);
+        SmartDashboard.putBoolean("AutoAlign/HasTarget", false);
+        SmartDashboard.putNumber("AutoAlign/tx", 0);
     }
 
     private void configureBindings() {
@@ -245,7 +257,7 @@ public class RobotContainer {
         operatorController.back().onTrue(intakeSubsystem.runOnce(() -> intakeSubsystem.runOnce(() -> intakeSubsystem.seedPosition(0)))); // was leftBumper
         
         // Shooter controls
-        operatorController.b().onTrue(hoodSubsystem.runOnce(() -> hoodSubsystem.setPosition(0.158)));
+        //operatorController.b().onTrue(hoodSubsystem.runOnce(() -> hoodSubsystem.setPosition(0.158)));
         operatorController.rightBumper().whileTrue(subsystemCommands.shootManually())
             .onFalse(subsystemCommands.briefReverse());
 
@@ -255,7 +267,8 @@ public class RobotContainer {
         operatorController.leftBumper().whileTrue(subsystemCommands.reverseDeliver());
 
         // Snowplow
-        operatorController.y().whileTrue(subsystemCommands.snowPlow());
+        operatorController.y().whileTrue(subsystemCommands.snowPlowFar());
+        operatorController.b().whileTrue(subsystemCommands.snowPlowNear());
         
 
         // Agitate command

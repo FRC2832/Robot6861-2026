@@ -109,7 +109,8 @@ public final class SubsystemCommands {
             // Start spinning up RPM + hood while aligning
             visionShotCommand,
             Commands.sequence(
-                alignCommand,
+                // Align with timeout — shoots even if not perfectly aligned
+                alignCommand.withTimeout(.2), //was 1.5
                 Commands.waitUntil(visionShotCommand::isReadyToShoot),
                 feed().withName("Vision Auton Feed")
             )
@@ -129,10 +130,13 @@ public final class SubsystemCommands {
     }
 
     public Command shootManually() {
-        return shooter.dashboardSpinUpCommand()
-            .andThen(feed().withName("Manual Feed"))
-            .withName("Shoot Manually")
-            .handleInterrupt(() -> shooter.stop());
+        return Commands.parallel(
+            hood.runOnce(() -> hood.setPosition(0.3)), // was 0.19
+            shooter.spinUpCommand(5200) //was 5650 rpm. max rpm. Takes too long to ramp up to 5900 rpm.
+        )
+        .andThen(feed().withName("Manual Feed"))
+        .withName("Shoot Manually")
+        .handleInterrupt(() -> shooter.stop());
     }
 
 
@@ -150,17 +154,35 @@ public final class SubsystemCommands {
     }
 
 
-    public Command snowPlow() {
+    public Command snowPlowFar() {
         return Commands.sequence(
             hood.runOnce(() -> hood.setPosition(0.75)),
             Commands.waitUntil(() -> hood.getCurrentPosition() > 0.5),
-            shooter.spinUpCommand(3700), //was 4000rpm
+            shooter.spinUpCommand(5200), //was 5600 rpm
             Commands.parallel(
                 feeder.feedCommand(),
                 floor.feedCommand(),
                 intake.intakeCommand()
-            ).withName("Snow Plow Feed")
-        ).withName("Snow Plow")
+            ).withName("Snow Plow Far Feed")
+        ).withName("Snow Plow Far")
+        .finallyDo(() -> {
+            shooter.stop();
+            hood.setPosition(0.15);
+        });
+    }
+
+
+    public Command snowPlowNear() {
+        return Commands.sequence(
+            hood.runOnce(() -> hood.setPosition(0.75)),
+            Commands.waitUntil(() -> hood.getCurrentPosition() > 0.5),
+            shooter.spinUpCommand(4000), //was 4000rpm
+            Commands.parallel(
+                feeder.feedCommand(),
+                floor.feedCommand(),
+                intake.intakeCommand()
+            ).withName("Snow Plow Near Feed")
+        ).withName("Snow Plow Near")
         .finallyDo(() -> {
             shooter.stop();
             hood.setPosition(0.15);

@@ -26,12 +26,14 @@ public class VisionShotCommand extends Command {
         
         taToRPM.put(2.0, 3650.0);   taToHood.put(2.0, 0.0);    // hub shot (~48 in)
         taToRPM.put(0.8, 3650.0);   taToHood.put(0.8, 0.15); 
-        //taToRPM.put(.38, 4200.0);   taToHood.put(0.38, 0.21);
-        taToRPM.put(.35, 4150.0);   taToHood.put(0.366, 0.21);  
-        taToRPM.put(.24, 4300.0);   taToHood.put(0.24, 0.21);   // sweet spot (~65 in), trench shot = 0.26
-        taToRPM.put(.2, 4350.0);   taToHood.put(0.2, 0.21);
-        taToRPM.put(.1, 4750.0);   taToHood.put(0.1, 0.23);
-        taToRPM.put(.05, 5400.0);   taToHood.put(0.1, 0.25); //was 5000
+        taToRPM.put(.45, 4000.0);   taToHood.put(0.45, 0.20);
+        taToRPM.put(.35, 4100.0);   taToHood.put(0.35, 0.21);  
+        taToRPM.put(.24, 4200.0);   taToHood.put(0.24, 0.21);   // sweet spot (~65 in), trench shot = 0.26
+        taToRPM.put(.2, 42500.0);   taToHood.put(0.2, 0.21);
+        taToRPM.put(.15, 4300.0);   taToHood.put(0.15, 0.22);
+        taToRPM.put(.1, 4550.0);   taToHood.put(0.1, 0.23);
+        taToRPM.put(.05, 5500.0);   taToHood.put(0.05, 0.26); //was 5000
+        taToRPM.put(.00, 5600.0);   taToHood.put(0.0, 0.27);
 
         //trench shot auton = 0.366
         //taToRPM.put(1.2, 4000.0);   taToHood.put(1.2, 0.3);    // ~114 in
