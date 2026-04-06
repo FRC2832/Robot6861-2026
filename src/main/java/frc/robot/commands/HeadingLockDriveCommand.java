@@ -1,12 +1,17 @@
 package frc.robot.commands;
 
+import java.util.Optional;
 import java.util.function.DoubleSupplier;
+
+import javax.sound.sampled.TargetDataLine;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.Driving;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -27,6 +32,7 @@ public class HeadingLockDriveCommand extends Command {
     private final double maxSpeed;
     private final double maxAngularRate;
     private final DoubleSupplier speedMultiplierSupplier;
+    private boolean isRed;
 
     // Same slew rate limiters as original default command
     private final SlewRateLimiter xLimiter = new SlewRateLimiter(3.0);
@@ -70,6 +76,9 @@ public class HeadingLockDriveCommand extends Command {
     @Override
     public void initialize() {
         targetHeading = swerve.getState().Pose.getRotation();
+        Optional<Alliance> alliance = DriverStation.getAlliance();
+        if (alliance.isPresent() && alliance.get() == Alliance.Red) 
+            isRed = true;
         wasRotating = false;
         needsHeadingCapture = false;
     }
@@ -84,6 +93,7 @@ public class HeadingLockDriveCommand extends Command {
         double deadband = maxSpeed * multiplier * 0.15;
 
         boolean isRotating = Math.abs(input.rotation) > kRotationInputThreshold;
+        
 
         if (isRotating) {
             // Driver is commanding rotation — normal open-loop, same as original
@@ -100,9 +110,13 @@ public class HeadingLockDriveCommand extends Command {
             if (wasRotating || needsHeadingCapture) {
                 // Capture current heading: after releasing stick, first strafe, or seedFieldCentric
                 targetHeading = swerve.getState().Pose.getRotation();
+                
                 wasRotating = false;
                 needsHeadingCapture = false;
+
             }
+            if (isRed)
+                    targetHeading = targetHeading.plus(Rotation2d.kPi);
             swerve.setControl(
                 lockedRequest
                     .withVelocityX(vx)

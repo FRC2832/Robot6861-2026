@@ -12,6 +12,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.UsbCamera;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -106,45 +107,45 @@ public class RobotContainer {
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
         // Original default command (no heading correction — drifts when strafing)
-        // drivetrain.setDefaultCommand(
-        //     drivetrain.applyRequest(() ->
-        //         drive.withVelocityX(xLimiter.calculate(driverController.getLeftY()) * MaxSpeed * speedMultiplier)
-        //             .withVelocityY(yLimiter.calculate(driverController.getLeftX()) * MaxSpeed * speedMultiplier)
-        //             .withRotationalRate(rotLimiter.calculate(-driverController.getRightX()) * MaxAngularRate * speedMultiplier)
-        //             .withDeadband(MaxSpeed * speedMultiplier * 0.15)
-        //     )
-        // );
+        drivetrain.setDefaultCommand(
+             drivetrain.applyRequest(() ->
+                 drive.withVelocityX(xLimiter.calculate(MathUtil.applyDeadband(driverController.getLeftY(), 0.1)) * MaxSpeed * speedMultiplier)
+                     .withVelocityY(yLimiter.calculate(MathUtil.applyDeadband(driverController.getLeftX(), 0.1)) * MaxSpeed * speedMultiplier)
+                     .withRotationalRate(rotLimiter.calculate(MathUtil.applyDeadband(-driverController.getRightX(), 0.1)) * MaxAngularRate * speedMultiplier)
+                     .withDeadband(MaxSpeed * speedMultiplier * 0.15)
+             )
+         );
 
         // Heading-lock drive: holds heading via PID when rotation stick is idle
-        final HeadingLockDriveCommand headingLockDrive = new HeadingLockDriveCommand(
-            drivetrain,
-            new DriveInputSmoother(
-                driverController::getLeftY,
-                driverController::getLeftX,
-                () -> -driverController.getRightX()
-            ),
-            MaxSpeed,
-            MaxAngularRate,
-            this::getSpeedMultiplier
-        );
+        //final HeadingLockDriveCommand headingLockDrive = new HeadingLockDriveCommand(
+          //  drivetrain,
+           // new DriveInputSmoother(
+            //    driverController::getLeftY,
+             //   driverController::getLeftX,
+              //  () -> -driverController.getRightX()
+            //),
+            //MaxSpeed,
+            //MaxAngularRate,
+            //this::getSpeedMultiplier
+        //);
         
-        drivetrain.setDefaultCommand(headingLockDrive);
+        //drivetrain.setDefaultCommand(headingLockDrive);
 
         // MegaTag pose estimation disabled — not currently used by any commands.
         // Vision commands use tx/ta/tv directly. Re-enable when pose processing is ready.
-        // limelightSubsystem.setDefaultCommand(
-        //     limelightSubsystem.run(() -> {
-        //      var measurement = limelightSubsystem.getMeasurement(drivetrain.getState().Pose);
-        //      measurement.ifPresent(m ->
-        //          drivetrain.addVisionMeasurement(
-        //             m.poseEstimate.pose,
-        //             m.poseEstimate.timestampSeconds,
-        //             m.standardDeviations
-        //              )
-        //          );
-        //      })
-        //      .ignoringDisable(false)
-        //  );
+         limelightSubsystem.setDefaultCommand(
+             limelightSubsystem.run(() -> {
+              var measurement = limelightSubsystem.getMeasurement(drivetrain.getState().Pose);
+              measurement.ifPresent(m ->
+                  drivetrain.addVisionMeasurement(
+                     m.poseEstimate.pose,
+                     m.poseEstimate.timestampSeconds,
+                     m.standardDeviations
+                      )
+                  );
+              })
+              .ignoringDisable(false)
+          );
 
         intakeSubsystem.setDefaultCommand(intakeSubsystem.run(() -> intakeSubsystem.stopRollers()).withName("IntakeIdle"));
         
@@ -200,7 +201,7 @@ public class RobotContainer {
         // Reset the field-centric heading on start press, and re-sync heading lock target.
         driverController.start().onTrue(drivetrain.runOnce(() -> {
             drivetrain.seedFieldCentric();
-            headingLockDrive.resetTargetHeading();
+            //headingLockDrive.resetTargetHeading();
         }));
 
         // Back button disables shooter idle (pit safety)
@@ -225,7 +226,7 @@ public class RobotContainer {
 
         // Vision aim + shoot - vision sets RPM + hood from ta, and auto-aims rotation from tx
         // To revert to vision-shoot-only (no aim assist): change to subsystemCommands.visionShoot()
-        driverController.rightTrigger().whileTrue(subsystemCommands.visionAimAndShoot());
+        //driverController.rightTrigger().whileTrue(subsystemCommands.visionAimAndShoot());
         driverController.x().whileTrue(subsystemCommands.shootManually())
             .onFalse(subsystemCommands.briefReverse());
 
@@ -254,7 +255,7 @@ public class RobotContainer {
         operatorController.leftTrigger().whileTrue(intakeSubsystem.reverseIntakeCommand());
 
         operatorController.start().onTrue(intakeSubsystem.stowCommand());
-        operatorController.back().onTrue(intakeSubsystem.runOnce(() -> intakeSubsystem.runOnce(() -> intakeSubsystem.seedPosition(0)))); // was leftBumper
+        operatorController.back().onTrue(intakeSubsystem.runOnce(() -> intakeSubsystem.seedPosition(0))); // was leftBumper
         
         // Shooter controls
         //operatorController.b().onTrue(hoodSubsystem.runOnce(() -> hoodSubsystem.setPosition(0.158)));

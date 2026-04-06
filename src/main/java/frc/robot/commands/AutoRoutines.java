@@ -165,35 +165,40 @@ public final class AutoRoutines {
         final AutoTrajectory bumpToShoot = Bump2CornerHubShott.asAutoTraj(routine);
         final AutoTrajectory endTurn = Bump2ShootEndwithTurn.asAutoTraj(routine);
 
-
-
         routine.active().onTrue(
             Commands.sequence(
                 // Shoot all fuel into hub
         
                 driveBump.resetOdometry(),
                 // Drive over bump
-                Commands.parallel(
-                    driveBump.cmd(),
-                    intake.intakeCommand().withTimeout(2.0)
+                driveBump.cmd(),
+                //Commands.parallel(
+                    //driveBump.cmd(),
+                    //intake.intakeCommand().alongWith(floor.feedCommand()).withTimeout(2.0).withName("IntakeAndFeed")
 
-                ),
-                
+               // ),
+                                
                 // Drive to center and pick up fuel
                 Commands.parallel(
                     centerPickup.cmd(),
-                    intake.intakeCommand().withTimeout(3.0)
+                    //intake.intakeCommand().withTimeout(4.0)
+                    intake.intakeCommand().alongWith(floor.feedCommand()).withTimeout(4.0).withName("IntakeAndFeed")
                 ),
 
                 centerToBump.cmd(),
                 bumpToShoot.resetOdometry(),
-                bumpToShoot.cmd(),
+                Commands.parallel(
+                    bumpToShoot.cmd(),
+                    subsystemCommands.briefReverse().withTimeout(.25)
+                ),
                 drivetrain.stopCommand(),
 
                 //drive to corner of hub, vision align, then shoot
                 //subsystemCommands.hubShot().withTimeout(5.0),
-                subsystemCommands.visionAlignAndShootAuton().withTimeout(5.0),
-                endTurn.cmd(), //for starting in Field oriented teleop
+
+                subsystemCommands.hubShotCenter().withTimeout(10.0),
+               //subsystemCommands.visionAlignAndShootAuton().withTimeout(8.0),
+                //endTurn.cmd(), //for starting in Field oriented teleop
                 drivetrain.stopCommand()
 
             )
@@ -220,26 +225,34 @@ private AutoRoutine rightBumpToCenterAuton() {
         
                 driveBump.resetOdometry(),
                 // Drive over bump
-                Commands.parallel(
-                    driveBump.cmd(),
-                    intake.intakeCommand().withTimeout(2.0)
+                driveBump.cmd(),
+                //Commands.parallel(
+                    //driveBump.cmd(),
+                    //intake.intakeCommand().alongWith(floor.feedCommand()).withTimeout(2.0).withName("IntakeAndFeed")
 
-                ),
+               // ),
                 
                 // Drive to center and pick up fuel
                 Commands.parallel(
                     centerPickup.cmd(),
-                    intake.intakeCommand().withTimeout(3.0)
+                    //intake.intakeCommand().withTimeout(3.0)
+                    intake.intakeCommand().alongWith(floor.feedCommand()).withTimeout(4.0).withName("IntakeAndFeed")
+
                 ),
 
                 centerToBump.cmd(),
                 bumpToShoot.resetOdometry(),
-                bumpToShoot.cmd(),
+                Commands.parallel(
+                    bumpToShoot.cmd(),
+                    subsystemCommands.briefReverse().withTimeout(.25)
+                ),
                 drivetrain.stopCommand(),
 
-                //drive to corner of hub, vision align, then shoot
+                 //drive to corner of hub, vision align, then shoot
                 //subsystemCommands.hubShot().withTimeout(5.0),
-                subsystemCommands.visionAlignAndShootAuton().withTimeout(5.0),
+                
+                subsystemCommands.hubShotCenter().withTimeout(10.0),
+               //subsystemCommands.visionAlignAndShootAuton().withTimeout(8.0),
                 //endTurn.cmd(), //for starting in Field oriented teleop
                 drivetrain.stopCommand()
 
@@ -295,16 +308,21 @@ private AutoRoutine rightBumpToCenterAuton() {
                 // Slow approach along wall with rollers running
                 Commands.parallel(
                     driveToDepotSlow.cmd(),
-                    intake.intakeCommand().withTimeout(6.0)
+                    //intake.intakeCommand().withTimeout(6.0)
+                    intake.intakeCommand().alongWith(floor.feedCommand()).withTimeout(4.0).withName("IntakeAndFeed")
                 ),
                 // Reset odometry before depot-to-shoot to correct drift
                 // driveToShoot.resetOdometry(),
                 // Drive to sweet spot shooting position
-                driveToShoot.cmd(),
+                Commands.parallel(
+                    driveToShoot.cmd(),
+                    subsystemCommands.briefReverse().withTimeout(.25)
+                ),
+
                 drivetrain.stopCommand(),
                 // Vision align then shoot gathered fuel
-                //subsystemCommands.sweetSpot().withTimeout(4.5),
-                subsystemCommands.visionAlignAndShootAuton().withTimeout(4.5),
+                subsystemCommands.sweetSpot().withTimeout(4.5),
+                //subsystemCommands.visionAlignAndShootAuton().withTimeout(4.5),
                 endTurn.cmd(), //for starting in Field oriented teleop
                 drivetrain.stopCommand()
             )

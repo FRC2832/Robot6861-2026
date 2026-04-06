@@ -202,10 +202,24 @@ public final class SubsystemCommands {
         });
     }
 
+
+    public Command hubShotCenter() {
+        return Commands.parallel(
+            hood.runOnce(() -> hood.setPosition(0.05)),
+            shooter.spinUpCommand(3750) //good value now! was 3750 and very high % in the hub!
+        ).withName("Hub Shot Center Prepare")
+        .andThen(feed().withName("Hub Shot Center Feed"))
+        .withName("Hub Shot")
+        .finallyDo(() -> {
+            shooter.stop();
+            hood.setPosition(0.15);
+        });
+    }
+
     public Command hubShotAuton() {
         return Commands.parallel(
             hood.runOnce(() -> hood.setPosition(0.0)),
-            shooter.spinUpCommand(3650) //was 3750 and very high % in the hub!
+            shooter.spinUpCommand(3500) //was 3750 and very high % in the hub!
         ).withName("Hub Shot Auton Prepare")
         .andThen(feedAuton().withName("Hub Shot Auton Feed"))
         .withName("Hub Shot Auton")

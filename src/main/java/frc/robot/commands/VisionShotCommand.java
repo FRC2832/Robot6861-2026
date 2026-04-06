@@ -29,7 +29,7 @@ public class VisionShotCommand extends Command {
         taToRPM.put(.45, 4000.0);   taToHood.put(0.45, 0.20);
         taToRPM.put(.35, 4100.0);   taToHood.put(0.35, 0.21);  
         taToRPM.put(.24, 4200.0);   taToHood.put(0.24, 0.21);   // sweet spot (~65 in), trench shot = 0.26
-        taToRPM.put(.2, 42500.0);   taToHood.put(0.2, 0.21);
+        taToRPM.put(.2, 4250.0);   taToHood.put(0.2, 0.21);
         taToRPM.put(.15, 4300.0);   taToHood.put(0.15, 0.22);
         taToRPM.put(.1, 4550.0);   taToHood.put(0.1, 0.23);
         taToRPM.put(.05, 5500.0);   taToHood.put(0.05, 0.26); //was 5000
