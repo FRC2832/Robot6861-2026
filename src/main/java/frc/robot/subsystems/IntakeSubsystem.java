@@ -15,6 +15,8 @@ import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.NeutralOut;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
@@ -34,27 +36,48 @@ import frc.robot.Constants.KrakenX60;
 import frc.robot.Ports;
 
 public class IntakeSubsystem extends SubsystemBase {
+    //public enum Speed {
+       // STOP(0),
+        //INTAKE(0.70), // TODO: set up at 0.8 for comp!, 0.6 was good to keep temps down
+       // REVERSEINTAKE(-0.4); //was -0.3 and -0.5
+
+       // private final double percentOutput;
+
+       // private Speed(double percentOutput) {
+          //  this.percentOutput = percentOutput;
+      //  }
+
+       // public Voltage voltage() {
+           // return Volts.of(percentOutput * 12.0);
+      //  }
+    //}
+
+    // CLOSED-LOOP VELOCITY CONTROL — uncomment this enum and comment out the one above to switch
     public enum Speed {
-        STOP(0),
-        INTAKE(0.8), // was 0.8, 0.6 was good to keep temps down
-        REVERSEINTAKE(-0.3);
-
-        private final double percentOutput;
-
-        private Speed(double percentOutput) {
-            this.percentOutput = percentOutput;
-        }
-
-        public Voltage voltage() {
-            return Volts.of(percentOutput * 12.0);
-        }
-    }
+         STOP(0),
+         INTAKE(4800),
+         REVERSEINTAKE(-3000);
+    //
+         private final double rpm;
+    //
+         private Speed(double rpm) {
+             this.rpm = rpm;
+         }
+    
+         public double rps() {
+             return rpm / 60.0;
+         }
+     }
 
     public enum Position {
         HOMED(75),
         STOWED(65),
-        INTAKE(12.0), // was -12, -4, was -78 most recently
-        AGITATE(20);  // was 20, was -50 most recently
+        // INTAKE(12.0), // was -12, -4, was -78 most recently — removed for hybrid gravity-drop approach
+        // AGITATE(20),  // was 20, was -50 most recently — replaced with high agitate positions
+        AGITATE_HIGH(25),  // TODO: was 30 tune — upper bound of agitate oscillation
+        AGITATE_LOW(15),   // TODO: was 20 tune — lower bound of agitate oscillation
+        INTAKE_DOWN(0);
+
 
         private final double degrees;
 
@@ -67,14 +90,16 @@ public class IntakeSubsystem extends SubsystemBase {
         }
     }
 
-    private static final double kPivotReduction = 85.0; //was 50
+    private static final double kPivotReduction = 50.0; //was 50
     private static final AngularVelocity kMaxPivotSpeed = KrakenX60.kFreeSpeed.div(kPivotReduction);
-    private static final Angle kPositionTolerance = Degrees.of(5);
+    private static final Angle kPositionTolerance = Degrees.of(7);
 
     private final TalonFX pivotMotor, rollerMotor;
     private final VoltageOut pivotVoltageRequest = new VoltageOut(0);
     private final MotionMagicVoltage pivotMotionMagicRequest = new MotionMagicVoltage(0).withSlot(0);
     private final VoltageOut rollerVoltageRequest = new VoltageOut(0);
+    // CLOSED-LOOP — uncomment when switching to velocity control
+    private final VelocityVoltage rollerVelocityRequest = new VelocityVoltage(0);
 
     private boolean isHomed = false;
 
@@ -129,11 +154,20 @@ public class IntakeSubsystem extends SubsystemBase {
             )
             .withCurrentLimits(
                 new CurrentLimitsConfigs()
-                    .withStatorCurrentLimit(Amps.of(60)) //was 70a
+                    .withStatorCurrentLimit(Amps.of(40)) //was 60a
                     .withStatorCurrentLimitEnable(true)
-                    .withSupplyCurrentLimit(Amps.of(50)) //was 60a
+                    .withSupplyCurrentLimit(Amps.of(30)) //was 50a
                     .withSupplyCurrentLimitEnable(true)
             );
+            // CLOSED-LOOP — uncomment this Slot0 config when switching to velocity control
+            config.withSlot0(
+                 new Slot0Configs()
+                     .withKP(0)       // start at 0, tune up after kV is dialed in
+                     .withKI(0)
+                     .withKD(0)
+                     .withKV(0.13)    // feedforward: ~12V / 100rps — tune this first
+                     .withKS(0)       // static friction, tune after kV
+             );
         rollerMotor.getConfigurator().apply(config);
     }
 
@@ -162,52 +196,130 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public void set(Speed speed) {
+      //  rollerMotor.setControl(
+        //    rollerVoltageRequest
+          //      .withOutput(speed.voltage())
+        //);
+        // CLOSED-LOOP — uncomment below and comment out above when switching to velocity control
         rollerMotor.setControl(
-            rollerVoltageRequest
-                .withOutput(speed.voltage())
+             rollerVelocityRequest
+                 .withVelocity(speed.rps())
+        );
+    }
+
+    public void stopRollers() {
+        rollerMotor.setControl(new NeutralOut());
+    }
+
+    // HYBRID APPROACH: gravity-drop for intake, PID only for upward moves
+    // Old PID-driven commands are commented out below each new version
+
+    public Command deployCommand() {
+        return Commands.sequence(
+            runOnce(() -> {
+                if (pivotMotor.getPosition().getValue().in(Degrees) > 30) {
+                    setPivotPercentOutput(-0.15);
+                }
+            }),
+            Commands.waitSeconds(1.0),
+            runOnce(() -> {
+                seedPosition(0);
+                setPivotPercentOutput(0);
+            })
         );
     }
 
     public Command intakeCommand() {
-        return startEnd(
-            () -> {
-                set(Position.INTAKE);
+        return Commands.sequence(
+            runOnce(() -> {
+                if (pivotMotor.getPosition().getValue().in(Degrees) > 30) {
+                    setPivotPercentOutput(-0.16);  // was -0.2 - too much nudge only if arm is up, skip if already down
+                }
                 set(Speed.INTAKE);
-            },
-            () -> set(Speed.STOP)
-        );
+            }),
+            Commands.waitSeconds(1.0),  // was 1.5 - too fast TODO: tune — minimum time to ensure arm settles on bumpers
+            runOnce(() -> {
+                seedPosition(0);         // intake is down, reset encoder reference
+                setPivotPercentOutput(0); // stop nudging, arm is resting on bumpers
+            }),
+            run(() -> set(Speed.INTAKE))  // keep commanding rollers every cycle until trigger released
+        )
+        .finallyDo(() -> {
+            setPivotPercentOutput(0);  // stop pivot nudge
+            stopRollers();
+        })
+        .withName("Intake");
     }
+    // OLD intakeCommand — PID drove pivot down (chain slack/skip issues):
+    // public Command intakeCommand() {
+    //     return startEnd(
+    //         () -> {
+    //             set(Position.INTAKE);
+    //             set(Speed.INTAKE);
+    //         },
+    //         () -> set(Speed.STOP)
+    //     );
+    // }
 
     public Command reverseIntakeCommand() {
-        return startEnd(
-            () -> {
-                set(Position.AGITATE);
+        return run(() -> {
+                set(Position.INTAKE_DOWN);
                 set(Speed.REVERSEINTAKE);
-            },
-            () -> set(Speed.STOP)
-        );
+            })
+            .finallyDo(() -> stopRollers())
+            .withName("ReverseIntake");
     }
+    // OLD reverseIntakeCommand:
+    // public Command reverseIntakeCommand() {
+    //     return startEnd(
+    //         () -> {
+    //             set(Position.AGITATE);
+    //             set(Speed.REVERSEINTAKE);
+    //         },
+    //         () -> set(Speed.STOP)
+    //     );
+    // }
 
     public Command agitateCommand() {
         return runOnce(() -> set(Speed.INTAKE))
             .andThen(
                 Commands.sequence(
-                    runOnce(() -> set(Position.AGITATE)),
+                    runOnce(() -> set(Position.AGITATE_HIGH)), //was low
                     Commands.waitUntil(this::isPositionWithinTolerance),
-                    runOnce(() -> set(Position.INTAKE)),
+                    runOnce(() -> set(Speed.INTAKE)), //tried reverseintake speed, but they went out
+                   
+                    runOnce(() -> set(Position.AGITATE_LOW)), //was high
                     Commands.waitUntil(this::isPositionWithinTolerance)
                 )
                 .repeatedly()
             )
             .handleInterrupt(() -> {
-                set(Position.INTAKE);
-                set(Speed.STOP);
-            });
+                setPivotPercentOutput(0);  // coast down
+                stopRollers();
+            })
+            .withName("Agitate");
     }
+    // OLD agitateCommand — oscillated in the low/chain-slack zone:
+    // public Command agitateCommand() {
+    //     return runOnce(() -> set(Speed.INTAKE))
+    //         .andThen(
+    //             Commands.sequence(
+    //                 runOnce(() -> set(Position.AGITATE)),
+    //                 Commands.waitUntil(this::isPositionWithinTolerance),
+    //                 runOnce(() -> set(Position.INTAKE)),
+    //                 Commands.waitUntil(this::isPositionWithinTolerance)
+    //             )
+    //             .repeatedly()
+    //         )
+    //         .handleInterrupt(() -> {
+    //             set(Position.INTAKE);
+    //             set(Speed.STOP);
+    //         });
+    // }
 
     public Command homingCommand() {
         return Commands.sequence(
-            runOnce(() -> setPivotPercentOutput(0.1)), // was 0.1
+            runOnce(() -> setPivotPercentOutput(0.4)), // was 0.1
             Commands.waitUntil(() -> pivotMotor.getSupplyCurrent().getValue().in(Amps) > 6),
             runOnce(() -> {
                 pivotMotor.setPosition(Position.HOMED.angle());
@@ -219,16 +331,29 @@ public class IntakeSubsystem extends SubsystemBase {
         .withInterruptBehavior(InterruptionBehavior.kCancelIncoming);
     }
 
+    public Command stowCommand() {
+        return Commands.sequence(
+            runOnce(() -> setPivotPercentOutput(0.375)), // was 0.4
+            Commands.waitUntil(() -> pivotMotor.getSupplyCurrent().getValue().in(Amps) > 6),
+            runOnce(() -> set(Position.STOWED)),
+            Commands.waitUntil(() -> pivotMotor.getPosition().getValue().in(Degrees) > (Position.STOWED.angle().in(Degrees) - 5)),
+            runOnce(() -> isHomed = true)
+        )
+        .unless(() -> isHomed)
+        .withInterruptBehavior(InterruptionBehavior.kCancelIncoming);
+    }
+
     @Override
     public void initSendable(SendableBuilder builder) {
-        builder.addStringProperty("Command", () -> getCurrentCommand() != null ? getCurrentCommand().getName() : "null", null);
-        builder.addDoubleProperty("Angle (degrees)", () -> pivotMotor.getPosition().getValue().in(Degrees), null);
-        builder.addDoubleProperty("Speed (rpm)", () -> pivotMotor.getVelocity().getValue().in(RPM), null);
-        builder.addDoubleProperty("RPM", () -> rollerMotor.getVelocity().getValue().in(RPM), null);
+        builder.addStringProperty("Intake Command", () -> getCurrentCommand() != null ? getCurrentCommand().getName() : "null", null);
+        builder.addDoubleProperty("Pivot Angle (degrees)", () -> pivotMotor.getPosition().getValue().in(Degrees), null);
+        builder.addDoubleProperty("Pivot Speed (rpm)", () -> pivotMotor.getVelocity().getValue().in(RPM), null);
+        builder.addDoubleProperty("Roller RPM", () -> rollerMotor.getVelocity().getValue().in(RPM), null);
         builder.addDoubleProperty("Pivot Supply Current", () -> pivotMotor.getSupplyCurrent().getValue().in(Amps), null);
         builder.addDoubleProperty("Roller Supply Current", () -> rollerMotor.getSupplyCurrent().getValue().in(Amps), null);
         builder.addDoubleProperty("Roller Stator Current", () -> rollerMotor.getStatorCurrent().getValue().in(Amps), null);
         builder.addDoubleProperty("Pivot Temp (F)", () -> pivotMotor.getDeviceTemp().getValue().in(Fahrenheit), null);
         builder.addDoubleProperty("Roller Temp (F)", () -> rollerMotor.getDeviceTemp().getValue().in(Fahrenheit), null);
+        builder.addDoubleProperty("Roller Applied Volts", () -> rollerMotor.getMotorVoltage().getValue().in(Volts), null);
     }
 }

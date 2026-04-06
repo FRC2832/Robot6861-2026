@@ -13,6 +13,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.Driving;
 import frc.robot.Landmarks;
@@ -33,7 +34,7 @@ public class AimAndDriveCommand extends Command {
         .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
         .withSteerRequestType(SteerRequestType.MotionMagicExpo)
         .withForwardPerspective(ForwardPerspectiveValue.OperatorPerspective)
-        .withHeadingPID(5, 0, 0);
+        .withHeadingPID(2.0, 0, 0); //was 5, lowered for debugging
 
     public AimAndDriveCommand(
         CommandSwerveDrivetrain swerve,
@@ -63,7 +64,7 @@ public class AimAndDriveCommand extends Command {
         //final Rotation2d hubDirectionInOperatorPerspective = hubDirectionInBlueAlliancePerspective.rotateBy(swerve.getOperatorForwardDirection());
         //return hubDirectionInOperatorPerspective;
 
-         return hubPosition.minus(robotPosition).getAngle(); // no rotateBy here
+        return hubPosition.minus(robotPosition).getAngle(); // no rotateBy here
     }
 
     @Override
@@ -81,6 +82,13 @@ public class AimAndDriveCommand extends Command {
         //SignalLogger.writeDouble("Aim/HeadingErrorDeg", headingErrorDeg);
         //SignalLogger.writeDouble("Aim/CommandedForward", input.forward);
         //SignalLogger.writeDouble("Aim/CommandedLeft", input.left);
+
+        SmartDashboard.putNumber("Aim/TargetHeadingDeg", targetHeading.getDegrees());
+        SmartDashboard.putNumber("Aim/CurrentHeadingDeg", currentHeading.getDegrees());
+        SmartDashboard.putNumber("Aim/OperatorForwardDeg", operatorForward.getDegrees());
+        SmartDashboard.putNumber("Aim/HeadingErrorDeg", headingErrorDeg);
+        SmartDashboard.putNumber("Aim/CommandedForward", input.forward);
+        SmartDashboard.putNumber("Aim/CommandedLeft", input.left);
 
 
         swerve.setControl(

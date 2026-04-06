@@ -90,6 +90,10 @@ public class HoodSubsystem extends SubsystemBase {
             .andThen(Commands.waitUntil(this::isPositionWithinTolerance));
     }
 
+    public double getCurrentPosition() {
+        return currentPosition;
+    }
+
     public boolean isPositionWithinTolerance() {
         return MathUtil.isNear(targetPosition, currentPosition, kPositionTolerance);
     }

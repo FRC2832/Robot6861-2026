@@ -6,11 +6,15 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.UsbCamera;
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -20,9 +24,11 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 import frc.robot.generated.TunerConstants;
 import frc.robot.commands.AutoRoutines;
+import frc.robot.commands.HeadingLockDriveCommand;
 import frc.robot.commands.SpeedModeCMD;
 import frc.robot.commands.SubsystemCommands;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.util.DriveInputSmoother;
 import frc.robot.subsystems.FeederSubsystem;
 import frc.robot.subsystems.FloorSubsystem;
 import frc.robot.subsystems.HangerSubsystem;
@@ -38,7 +44,12 @@ public class RobotContainer {
     
     // TODO: Increase values eventually and put these values into Constants file
     private final double MaxAngularRate = Constants.Driving.AngularRateReduction * RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
-    private double speedMultiplier = 1.0; 
+    private double speedMultiplier = 1.0;
+
+    // Slew rate limiters — strafe more restrictive than forward/back
+    private final SlewRateLimiter xLimiter = new SlewRateLimiter(3.0);   // TODO: tune — forward/back
+    private final SlewRateLimiter yLimiter = new SlewRateLimiter(2.0);   // TODO: tune — strafe (more limiting)
+    private final SlewRateLimiter rotLimiter = new SlewRateLimiter(3.0); // TODO: tune — rotation
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -61,11 +72,15 @@ public class RobotContainer {
     private final HangerSubsystem hangerSubsystem = new HangerSubsystem();
     private final HoodSubsystem hoodSubsystem = new HoodSubsystem();
     private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
-    private final LimelightSubsystem limelightSubsystem = new LimelightSubsystem("limelight");
+    private final LimelightSubsystem limelightSubsystem = new LimelightSubsystem("limelight-dino");
     private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
 
     // Command instantiation
-    private final SubsystemCommands subsystemCommands = new SubsystemCommands(drivetrain, intakeSubsystem, floorSubsystem, feederSubsystem, shooterSubsystem, hoodSubsystem, hangerSubsystem);
+    // private final SubsystemCommands subsystemCommands = new SubsystemCommands(drivetrain, intakeSubsystem, floorSubsystem, feederSubsystem, shooterSubsystem, hoodSubsystem, hangerSubsystem);
+    private final SubsystemCommands subsystemCommands = new SubsystemCommands(
+        drivetrain, intakeSubsystem, floorSubsystem, feederSubsystem, shooterSubsystem, hoodSubsystem, hangerSubsystem,
+        driverController::getLeftY, driverController::getLeftX,
+        MaxSpeed, MaxAngularRate, this::getSpeedMultiplier);
     private final AutoRoutines autoRoutines = new AutoRoutines(
         drivetrain, intakeSubsystem, floorSubsystem, feederSubsystem,
         shooterSubsystem, hoodSubsystem, hangerSubsystem, limelightSubsystem
@@ -73,37 +88,67 @@ public class RobotContainer {
 
     public RobotContainer() {
         configureBindings();
+        SignalLogger.stop();
         autoRoutines.configure();
+
+        // Seed vision SmartDashboard entries so they appear in Elastic before commands run
+        SmartDashboard.putBoolean("Vision/HasTarget", false);
+        SmartDashboard.putNumber("Vision/ta", 0);
+        SmartDashboard.putNumber("Vision/TargetRPM", 0);
+        SmartDashboard.putNumber("Vision/TargetHood", 0);
+        SmartDashboard.putBoolean("VisionAim/HasTarget", false);
+        SmartDashboard.putNumber("VisionAim/tx", 0);
+        SmartDashboard.putNumber("VisionAim/RotationRate", 0);
+        SmartDashboard.putBoolean("AutoAlign/HasTarget", false);
+        SmartDashboard.putNumber("AutoAlign/tx", 0);
     }
 
     private void configureBindings() {
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
+        // Original default command (no heading correction — drifts when strafing)
         drivetrain.setDefaultCommand(
-            // Drivetrain will execute this command periodically
-            drivetrain.applyRequest(() ->
-                drive.withVelocityX(driverController.getLeftY() * MaxSpeed * speedMultiplier) // Drive forward with negative Y (forward)
-                    .withVelocityY(driverController.getLeftX() * MaxSpeed * speedMultiplier) // Drive left with negative X (left)
-                    .withRotationalRate(-driverController.getRightX() * MaxAngularRate * speedMultiplier) // Drive counterclockwise with negative X (left)
-                    .withDeadband(MaxSpeed * speedMultiplier * 0.15)
-            )
-        );
+             drivetrain.applyRequest(() ->
+                 drive.withVelocityX(xLimiter.calculate(MathUtil.applyDeadband(driverController.getLeftY(), 0.1)) * MaxSpeed * speedMultiplier)
+                     .withVelocityY(yLimiter.calculate(MathUtil.applyDeadband(driverController.getLeftX(), 0.1)) * MaxSpeed * speedMultiplier)
+                     .withRotationalRate(rotLimiter.calculate(MathUtil.applyDeadband(-driverController.getRightX(), 0.1)) * MaxAngularRate * speedMultiplier)
+                     .withDeadband(MaxSpeed * speedMultiplier * 0.15)
+             )
+         );
 
-        //  Limelight disabled to reduce CPU usage
-        // limelightSubsystem.setDefaultCommand(
-        //    limelightSubsystem.run(() -> {
-        //      var measurement = limelightSubsystem.getMeasurement(drivetrain.getState().Pose);
-        //      measurement.ifPresent(m ->
-        //          drivetrain.addVisionMeasurement(
-        //             m.poseEstimate.pose,
-        //             m.poseEstimate.timestampSeconds,
-        //             m.standardDeviations
-        //             )
-        //         );
-        //     })
-        //     .ignoringDisable(true)
-        // );
+        // Heading-lock drive: holds heading via PID when rotation stick is idle
+        //final HeadingLockDriveCommand headingLockDrive = new HeadingLockDriveCommand(
+          //  drivetrain,
+           // new DriveInputSmoother(
+            //    driverController::getLeftY,
+             //   driverController::getLeftX,
+              //  () -> -driverController.getRightX()
+            //),
+            //MaxSpeed,
+            //MaxAngularRate,
+            //this::getSpeedMultiplier
+        //);
+        
+        //drivetrain.setDefaultCommand(headingLockDrive);
 
+        // MegaTag pose estimation disabled — not currently used by any commands.
+        // Vision commands use tx/ta/tv directly. Re-enable when pose processing is ready.
+         limelightSubsystem.setDefaultCommand(
+             limelightSubsystem.run(() -> {
+              var measurement = limelightSubsystem.getMeasurement(drivetrain.getState().Pose);
+              measurement.ifPresent(m ->
+                  drivetrain.addVisionMeasurement(
+                     m.poseEstimate.pose,
+                     m.poseEstimate.timestampSeconds,
+                     m.standardDeviations
+                      )
+                  );
+              })
+              .ignoringDisable(false)
+          );
+
+        intakeSubsystem.setDefaultCommand(intakeSubsystem.run(() -> intakeSubsystem.stopRollers()).withName("IntakeIdle"));
+        
         shooterSubsystem.setDefaultCommand(shooterSubsystem.idleCommand());
 
         hoodSubsystem.setDefaultCommand(
@@ -123,9 +168,20 @@ public class RobotContainer {
             drivetrain.applyRequest(() -> idle).ignoringDisable(true)
         );
 
-        // Boilerplate code to start the camera server
-        
-        //driverCam = CameraServer.startAutomaticCapture("Driver Cam", 0);
+        // Turn Limelight off when disabled to reduce heat buildup
+        RobotModeTriggers.disabled()
+            .onTrue(Commands.runOnce(() -> {
+                LimelightHelpers.setLEDMode_ForceOff("limelight-dino");
+                LimelightHelpers.setLimelightNTDouble("limelight-dino", "camMode", 1); // driver cam = no processing
+            }).ignoringDisable(true))
+            .onFalse(Commands.runOnce(() -> {
+                LimelightHelpers.setLEDMode_PipelineControl("limelight-dino");
+                LimelightHelpers.setLimelightNTDouble("limelight-dino", "camMode", 0); // vision processing on
+            }));
+
+        // DISABLED: USB camera on roboRIO drew too much current, causing the roboRIO to brown out and shut down the robot.
+        // Use PhotonVision on a coprocessor instead for driver camera.
+        // driverCam = CameraServer.startAutomaticCapture("Driver Cam", 0);
         //driverCam.setResolution(640, 480);
         //driverCam.setFPS(20);
 
@@ -142,8 +198,11 @@ public class RobotContainer {
         //driverController.start().and(driverController.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
         //driverController.start().and(driverController.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
-        // Reset the field-centric heading on start press.
-        driverController.start().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+        // Reset the field-centric heading on start press, and re-sync heading lock target.
+        driverController.start().onTrue(drivetrain.runOnce(() -> {
+            drivetrain.seedFieldCentric();
+            //headingLockDrive.resetTargetHeading();
+        }));
 
         // Back button disables shooter idle (pit safety)
         driverController.back().onTrue(shooterSubsystem.runOnce(() -> shooterSubsystem.setIdleEnabled(false)));
@@ -165,13 +224,14 @@ public class RobotContainer {
            // .onTrue(intakeSubsystem.homingCommand())
            // .onTrue(hangerSubsystem.homingCommand());
 
-        // Aim and shoot disabled - turns wrong direction - might be due to Pigeon orientation
-        // driverController.rightTrigger().whileTrue(subsystemCommands.aimAndShoot());
-        driverController.rightBumper().whileTrue(subsystemCommands.shootManually())
+        // Vision aim + shoot - vision sets RPM + hood from ta, and auto-aims rotation from tx
+        // To revert to vision-shoot-only (no aim assist): change to subsystemCommands.visionShoot()
+        //driverController.rightTrigger().whileTrue(subsystemCommands.visionAimAndShoot());
+        driverController.x().whileTrue(subsystemCommands.shootManually())
             .onFalse(subsystemCommands.briefReverse());
 
         //Sweet Spot
-        driverController.x().whileTrue(subsystemCommands.sweetSpot())
+        driverController.rightBumper().whileTrue(subsystemCommands.sweetSpot())
             .onFalse(subsystemCommands.briefReverse());
 
          //Hub Shot
@@ -189,14 +249,16 @@ public class RobotContainer {
 
 
         // Intake controls
-        operatorController.rightTrigger().whileTrue(intakeSubsystem.intakeCommand()); // was leftTrigger
+        operatorController.rightTrigger().whileTrue(
+            intakeSubsystem.intakeCommand().alongWith(floorSubsystem.feedCommand()).withName("IntakeAndFeed")
+        ); // was leftTrigger, added floor feed
         operatorController.leftTrigger().whileTrue(intakeSubsystem.reverseIntakeCommand());
 
-        operatorController.start().onTrue(intakeSubsystem.homingCommand());
-        operatorController.back().onTrue(intakeSubsystem.runOnce(() -> intakeSubsystem.set(IntakeSubsystem.Position.INTAKE))); // was leftBumper
+        operatorController.start().onTrue(intakeSubsystem.stowCommand());
+        operatorController.back().onTrue(intakeSubsystem.runOnce(() -> intakeSubsystem.seedPosition(0))); // was leftBumper
         
         // Shooter controls
-        operatorController.b().onTrue(hoodSubsystem.runOnce(() -> hoodSubsystem.setPosition(0.158)));
+        //operatorController.b().onTrue(hoodSubsystem.runOnce(() -> hoodSubsystem.setPosition(0.158)));
         operatorController.rightBumper().whileTrue(subsystemCommands.shootManually())
             .onFalse(subsystemCommands.briefReverse());
 
@@ -206,7 +268,8 @@ public class RobotContainer {
         operatorController.leftBumper().whileTrue(subsystemCommands.reverseDeliver());
 
         // Snowplow
-        operatorController.y().whileTrue(subsystemCommands.snowPlow());
+        operatorController.y().whileTrue(subsystemCommands.snowPlowFar());
+        operatorController.b().whileTrue(subsystemCommands.snowPlowNear());
         
 
         // Agitate command
@@ -269,6 +332,9 @@ public class RobotContainer {
 
     public void setSpeedMultiplier(double multiplier) {
         this.speedMultiplier = multiplier;
-        
+    }
+
+    public double getSpeedMultiplier() {
+        return speedMultiplier;
     }
 }
