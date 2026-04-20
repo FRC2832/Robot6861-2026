@@ -29,7 +29,7 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.FeederSubsystem;
 import frc.robot.subsystems.FloorSubsystem;
-import frc.robot.subsystems.HangerSubsystem;
+//import frc.robot.subsystems.HangerSubsystem;
 import frc.robot.subsystems.HoodSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.LimelightSubsystem;
@@ -42,7 +42,7 @@ public final class AutoRoutines {
     private final FeederSubsystem feeder;
     private final ShooterSubsystem shooter;
     private final HoodSubsystem hood;
-    private final HangerSubsystem hanger;
+    //private final HangerSubsystem hanger;
     private final LimelightSubsystem limelight;
 
     private final SubsystemCommands subsystemCommands;
@@ -57,7 +57,7 @@ public final class AutoRoutines {
         FeederSubsystem feeder,
         ShooterSubsystem shooter,
         HoodSubsystem hood,
-        HangerSubsystem hanger,
+        //HangerSubsystem hanger,
         LimelightSubsystem limelight
     ) {
         this.drivetrain = drivetrain;
@@ -66,10 +66,10 @@ public final class AutoRoutines {
         this.feeder = feeder;
         this.shooter = shooter;
         this.hood = hood;
-        this.hanger = hanger;
+        //this.hanger = hanger;
         this.limelight = limelight;
 
-        this.subsystemCommands = new SubsystemCommands(drivetrain, intake, floor, feeder, shooter, hood, hanger);
+        this.subsystemCommands = new SubsystemCommands(drivetrain, intake, floor, feeder, shooter, hood);//hanger
 
         this.autoFactory = drivetrain.createAutoFactory();
         this.autoChooser = new AutoChooser();

@@ -6,7 +6,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.FeederSubsystem;
 import frc.robot.subsystems.FloorSubsystem;
-import frc.robot.subsystems.HangerSubsystem;
+//import frc.robot.subsystems.HangerSubsystem;
 import frc.robot.subsystems.HoodSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
@@ -19,7 +19,7 @@ public final class SubsystemCommands {
     private final FeederSubsystem feeder;
     private final ShooterSubsystem shooter;
     private final HoodSubsystem hood;
-    private final HangerSubsystem hanger;
+    //private final HangerSubsystem hanger;
 
     private final DoubleSupplier forwardInput;
     private final DoubleSupplier leftInput;
@@ -34,7 +34,7 @@ public final class SubsystemCommands {
         FeederSubsystem feeder,
         ShooterSubsystem shooter,
         HoodSubsystem hood,
-        HangerSubsystem hanger,
+        //HangerSubsystem hanger,
         DoubleSupplier forwardInput,
         DoubleSupplier leftInput,
         double maxSpeed,
@@ -47,7 +47,7 @@ public final class SubsystemCommands {
         this.feeder = feeder;
         this.shooter = shooter;
         this.hood = hood;
-        this.hanger = hanger;
+        //this.hanger = hanger;
 
         this.forwardInput = forwardInput;
         this.leftInput = leftInput;
@@ -62,8 +62,8 @@ public final class SubsystemCommands {
         FloorSubsystem floor,
         FeederSubsystem feeder,
         ShooterSubsystem shooter,
-        HoodSubsystem hood,
-        HangerSubsystem hanger
+        HoodSubsystem hood//,
+        //HangerSubsystem hanger
     ) {
         this(
             swerve,
@@ -72,7 +72,7 @@ public final class SubsystemCommands {
             feeder,
             shooter,
             hood,
-            hanger,
+            //hanger,
             () -> 0,
             () -> 0,
             0,

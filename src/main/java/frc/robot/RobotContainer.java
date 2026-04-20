@@ -31,7 +31,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.util.DriveInputSmoother;
 import frc.robot.subsystems.FeederSubsystem;
 import frc.robot.subsystems.FloorSubsystem;
-import frc.robot.subsystems.HangerSubsystem;
+//import frc.robot.subsystems.HangerSubsystem;
 import frc.robot.subsystems.HoodSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.LimelightSubsystem;
@@ -69,7 +69,7 @@ public class RobotContainer {
     // Subsystem instantiation
     private final FeederSubsystem feederSubsystem = new FeederSubsystem();
     private final FloorSubsystem floorSubsystem = new FloorSubsystem();
-    private final HangerSubsystem hangerSubsystem = new HangerSubsystem();
+    //private final HangerSubsystem hangerSubsystem = new HangerSubsystem();
     private final HoodSubsystem hoodSubsystem = new HoodSubsystem();
     private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
     private final LimelightSubsystem limelightSubsystem = new LimelightSubsystem("limelight-dino");
@@ -78,12 +78,12 @@ public class RobotContainer {
     // Command instantiation
     // private final SubsystemCommands subsystemCommands = new SubsystemCommands(drivetrain, intakeSubsystem, floorSubsystem, feederSubsystem, shooterSubsystem, hoodSubsystem, hangerSubsystem);
     private final SubsystemCommands subsystemCommands = new SubsystemCommands(
-        drivetrain, intakeSubsystem, floorSubsystem, feederSubsystem, shooterSubsystem, hoodSubsystem, hangerSubsystem,
+        drivetrain, intakeSubsystem, floorSubsystem, feederSubsystem, shooterSubsystem, hoodSubsystem, 
         driverController::getLeftY, driverController::getLeftX,
-        MaxSpeed, MaxAngularRate, this::getSpeedMultiplier);
+        MaxSpeed, MaxAngularRate, this::getSpeedMultiplier); //
     private final AutoRoutines autoRoutines = new AutoRoutines(
         drivetrain, intakeSubsystem, floorSubsystem, feederSubsystem,
-        shooterSubsystem, hoodSubsystem, hangerSubsystem, limelightSubsystem
+        shooterSubsystem, hoodSubsystem, /*hangerSubsystem,*/ limelightSubsystem
     );
 
     public RobotContainer() {
@@ -243,9 +243,9 @@ public class RobotContainer {
         //CLimbing mechanism
         //TODO: uncomment for hanging when climber meets perimeter rules  
         //driverController.povUp().onTrue(hangerSubsystem.positionCommand(HangerSubsystem.Position.HANGING));
-        driverController.povUp().onTrue(hangerSubsystem.positionCommand(HangerSubsystem.Position.EXTEND_HOPPER));
+        //driverController.povUp().onTrue(hangerSubsystem.positionCommand(HangerSubsystem.Position.EXTEND_HOPPER));
         
-        driverController.povDown().onTrue(hangerSubsystem.positionCommand(HangerSubsystem.Position.HUNG));
+        //driverController.povDown().onTrue(hangerSubsystem.positionCommand(HangerSubsystem.Position.HUNG));
 
 
         // Intake controls
