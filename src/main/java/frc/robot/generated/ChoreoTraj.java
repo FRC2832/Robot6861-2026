@@ -55,9 +55,9 @@ public record ChoreoTraj(
     public static final ChoreoTraj CenterPickup = new ChoreoTraj(
         "CenterPickup",
         OptionalInt.empty(),
-        7.72226,
-        new Pose2d(8.05634, 6.91912, Rotation2d.fromRadians(-1.5708)),
-        new Pose2d(6.7173, 5.33793, Rotation2d.fromRadians(0))
+        7.12334,
+        new Pose2d(8.01166, 6.93592, Rotation2d.fromRadians(-1.5708)),
+        new Pose2d(7.05384, 5.27914, Rotation2d.fromRadians(0))
     );
     public static final ChoreoTraj CornerHubBump = new ChoreoTraj(
         "CornerHubBump",
@@ -194,9 +194,9 @@ public record ChoreoTraj(
     public static final ChoreoTraj RightCenterPickup = new ChoreoTraj(
         "RightCenterPickup",
         OptionalInt.empty(),
-        7.3517,
+        6.53884,
         new Pose2d(8.05634, 1.11641, Rotation2d.fromRadians(1.5708)),
-        new Pose2d(6.7148, 2.61793, Rotation2d.fromRadians(0))
+        new Pose2d(7.18327, 2.66453, Rotation2d.fromRadians(0))
     );
     public static final ChoreoTraj RightBumpBack2Center = new ChoreoTraj(
         "RightBumpBack2Center",
