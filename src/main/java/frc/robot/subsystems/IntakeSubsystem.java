@@ -55,7 +55,7 @@ public class IntakeSubsystem extends SubsystemBase {
     // CLOSED-LOOP VELOCITY CONTROL — uncomment this enum and comment out the one above to switch
     public enum Speed {
          STOP(0),
-         INTAKE(4800),
+         INTAKE(5200), // was 4800
          REVERSEINTAKE(-3000);
     //
          private final double rpm;

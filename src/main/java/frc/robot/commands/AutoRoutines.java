@@ -1,5 +1,6 @@
 package frc.robot.commands;
 
+import static frc.robot.generated.ChoreoTraj.Bump2Center;
 import static frc.robot.generated.ChoreoTraj.Bump2CornerHubShott;
 import static frc.robot.generated.ChoreoTraj.Bump2ShootEndwithTurn;
 import static frc.robot.generated.ChoreoTraj.BumpBack2Center;
@@ -12,6 +13,7 @@ import static frc.robot.generated.ChoreoTraj.HubLongStraightBack;
 import static frc.robot.generated.ChoreoTraj.HubShortStraightBack;
 
 import static frc.robot.generated.ChoreoTraj.NoMove;
+import static frc.robot.generated.ChoreoTraj.RightBump2Center;
 import static frc.robot.generated.ChoreoTraj.RightBump2CornerHubShott_copy1;
 import static frc.robot.generated.ChoreoTraj.RightBumpBack2Center;
 import static frc.robot.generated.ChoreoTraj.RightCenter2Bump;
@@ -160,6 +162,7 @@ public final class AutoRoutines {
     private AutoRoutine bumpToCenterAuton() {
         final AutoRoutine routine = autoFactory.newRoutine("Bump 2 Center");
         final AutoTrajectory driveBump = BumpBack2Center.asAutoTraj(routine);
+        final AutoTrajectory driveBumpToCenter = Bump2Center.asAutoTraj(routine);
         final AutoTrajectory centerPickup = CenterPickup.asAutoTraj(routine);
         final AutoTrajectory centerToBump = Center2Bump.asAutoTraj(routine);
         final AutoTrajectory bumpToShoot = Bump2CornerHubShott.asAutoTraj(routine);
@@ -172,11 +175,16 @@ public final class AutoRoutines {
                 driveBump.resetOdometry(),
                 // Drive over bump
                 driveBump.cmd(),
-                //Commands.parallel(
-                    //driveBump.cmd(),
-                    //intake.intakeCommand().alongWith(floor.feedCommand()).withTimeout(2.0).withName("IntakeAndFeed")
 
-               // ),
+                
+                Commands.parallel(
+                    Commands.sequence(
+                        driveBumpToCenter.resetOdometry(),
+                        driveBumpToCenter.cmd()
+                    ),
+                    intake.intakeCommand().alongWith(floor.feedCommand()).withTimeout(2.0).withName("IntakeAndFeed")
+
+                ),
                                 
                 // Drive to center and pick up fuel
                 Commands.parallel(
@@ -212,6 +220,7 @@ public final class AutoRoutines {
 private AutoRoutine rightBumpToCenterAuton() {
         final AutoRoutine routine = autoFactory.newRoutine("RightBump 2 Center");
         final AutoTrajectory driveBump = RightBumpBack2Center.asAutoTraj(routine);
+        final AutoTrajectory driveBump2Center = RightBump2Center.asAutoTraj(routine);
         final AutoTrajectory centerPickup = RightCenterPickup.asAutoTraj(routine);
         final AutoTrajectory centerToBump = RightCenter2Bump.asAutoTraj(routine);
         final AutoTrajectory bumpToShoot = RightBump2CornerHubShott_copy1.asAutoTraj(routine);
@@ -226,11 +235,14 @@ private AutoRoutine rightBumpToCenterAuton() {
                 driveBump.resetOdometry(),
                 // Drive over bump
                 driveBump.cmd(),
-                //Commands.parallel(
-                    //driveBump.cmd(),
-                    //intake.intakeCommand().alongWith(floor.feedCommand()).withTimeout(2.0).withName("IntakeAndFeed")
 
-               // ),
+                driveBump2Center.resetOdometry(),
+
+                Commands.parallel(
+                    driveBump2Center.cmd(),
+                    intake.intakeCommand().alongWith(floor.feedCommand()).withTimeout(2.0).withName("IntakeAndFeed")
+
+                ),
                 
                 // Drive to center and pick up fuel
                 Commands.parallel(
