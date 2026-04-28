@@ -202,10 +202,10 @@ public final class AutoRoutines {
                 drivetrain.stopCommand(),
 
                 //drive to corner of hub, vision align, then shoot
-                //subsystemCommands.hubShot().withTimeout(5.0),
+                subsystemCommands.visionAlignAndShootAuton().withTimeout(1.0),
+                subsystemCommands.hubShot().withTimeout(8.0),
 
-                subsystemCommands.hubShotCenter().withTimeout(10.0),
-               //subsystemCommands.visionAlignAndShootAuton().withTimeout(8.0),
+                //subsystemCommands.hubShotCenter().withTimeout(10.0), // added for finals Livonia to avoid alliance partner
                 //endTurn.cmd(), //for starting in Field oriented teleop
                 drivetrain.stopCommand()
 

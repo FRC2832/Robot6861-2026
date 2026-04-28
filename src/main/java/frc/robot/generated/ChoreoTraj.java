@@ -27,7 +27,7 @@ public record ChoreoTraj(
     public static final ChoreoTraj Bump2Center = new ChoreoTraj(
         "Bump2Center",
         OptionalInt.empty(),
-        2.47185,
+        1.71768,
         new Pose2d(5.79115, 5.86553, Rotation2d.fromRadians(0)),
         new Pose2d(8.14172, 6.91912, Rotation2d.fromRadians(-1.5708))
     );
@@ -48,9 +48,9 @@ public record ChoreoTraj(
     public static final ChoreoTraj BumpBack2Center = new ChoreoTraj(
         "BumpBack2Center",
         OptionalInt.empty(),
-        2.08664,
+        2.08663,
         new Pose2d(3.73142, 5.17896, Rotation2d.fromRadians(0)),
-        new Pose2d(5.79116, 5.86554, Rotation2d.fromRadians(0))
+        new Pose2d(5.79115, 5.86553, Rotation2d.fromRadians(0))
     );
     public static final ChoreoTraj Center2Bump = new ChoreoTraj(
         "Center2Bump",
@@ -157,6 +157,13 @@ public record ChoreoTraj(
         new Pose2d(2.49839, 4.03528, Rotation2d.fromRadians(0)),
         new Pose2d(0.94136, 3.56436, Rotation2d.fromRadians(3.14159))
     );
+    public static final ChoreoTraj RightBump2Center = new ChoreoTraj(
+        "RightBump2Center",
+        OptionalInt.empty(),
+        2.20416,
+        new Pose2d(5.99246, 2.10019, Rotation2d.fromRadians(0)),
+        new Pose2d(8.05634, 1.11647, Rotation2d.fromRadians(1.5708))
+    );
     public static final ChoreoTraj RightBump2CornerHubShott_copy1 = new ChoreoTraj(
         "RightBump2CornerHubShott_copy1",
         OptionalInt.empty(),
@@ -213,13 +220,6 @@ public record ChoreoTraj(
         new Pose2d(0.29, 7.25199, Rotation2d.fromRadians(-1.5708)),
         new Pose2d(0.42381, 5.85437, Rotation2d.fromRadians(-1.5708))
     );
-    public static final ChoreoTraj RightBump2Center = new ChoreoTraj(
-        "RightBump2Center",
-        OptionalInt.empty(),
-        2.20416,
-        new Pose2d(5.99246, 2.10019, Rotation2d.fromRadians(0)),
-        new Pose2d(8.05634, 1.11647, Rotation2d.fromRadians(1.5708))
-    );
 
     /**
      * A map between trajectory names and their corresponding data.
@@ -245,6 +245,7 @@ public record ChoreoTraj(
         Map.entry("OutpostAndDepotTrajectory$1", OutpostAndDepotTrajectory$1),
         Map.entry("OutpostAndDepotTrajectory$2", OutpostAndDepotTrajectory$2),
         Map.entry("OutpostAndDepotTrajectory$3", OutpostAndDepotTrajectory$3),
+        Map.entry("RightBump2Center", RightBump2Center),
         Map.entry("RightBump2CornerHubShott_copy1", RightBump2CornerHubShott_copy1),
         Map.entry("RightBumpBack2Center", RightBumpBack2Center),
         Map.entry("RightCenter2Bump", RightCenter2Bump),
@@ -252,8 +253,7 @@ public record ChoreoTraj(
         Map.entry("TrenchToDepotFast", TrenchToDepotFast),
         Map.entry("TrenchToDepotSlow", TrenchToDepotSlow),
         Map.entry("TrenchToDepotSlow$0", TrenchToDepotSlow$0),
-        Map.entry("TrenchToDepotSlow$1", TrenchToDepotSlow$1),
-        Map.entry("RightBump2Center", RightBump2Center)
+        Map.entry("TrenchToDepotSlow$1", TrenchToDepotSlow$1)
     );
 
     /**
