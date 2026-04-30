@@ -203,6 +203,7 @@ public final class AutoRoutines {
 
                 //drive to corner of hub, vision align, then shoot
                 subsystemCommands.visionAlignAndShootAuton().withTimeout(1.0),
+                drivetrain.stopCommand(),
                 subsystemCommands.hubShot().withTimeout(8.0),
 
                 //subsystemCommands.hubShotCenter().withTimeout(10.0), // added for finals Livonia to avoid alliance partner

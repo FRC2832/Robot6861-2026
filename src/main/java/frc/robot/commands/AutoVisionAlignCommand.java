@@ -21,9 +21,9 @@ public class AutoVisionAlignCommand extends Command {
     private static final String kLimelightName = "limelight-dino";
 
     // How close tx must be to zero to consider aligned (degrees)
-    private static final double kAlignTolerance = 3.0;
+    private static final double kAlignTolerance = 3.0; //was 3.0
     // Deadband: don't correct below this (degrees)
-    private static final double kTxDeadband = 2.0; //was 1.0
+    private static final double kTxDeadband = 2.0; //on May 4, test with 1.75.Need AdvnatageScope data to look at rotation. was 2.0 & 1.0 before that
     // Proportional gain for rotation
     private static final double kAimP = 0.04;
     // Max rotation speed (rad/s) — keep moderate for auton safety
