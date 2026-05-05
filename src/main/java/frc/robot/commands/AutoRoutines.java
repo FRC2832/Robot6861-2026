@@ -190,7 +190,7 @@ public final class AutoRoutines {
                 Commands.parallel(
                     centerPickup.cmd(),
                     //intake.intakeCommand().withTimeout(4.0)
-                    intake.intakeCommand().alongWith(floor.feedCommand()).withTimeout(4.0).withName("IntakeAndFeed")
+                    intake.intakeCommand().alongWith(floor.feedCommand()).withTimeout(4.5).withName("IntakeAndFeed") //WAS 4.0
                 ),
 
                 centerToBump.cmd(),
@@ -202,7 +202,7 @@ public final class AutoRoutines {
                 drivetrain.stopCommand(),
 
                 //drive to corner of hub, vision align, then shoot
-                subsystemCommands.visionAlignAndShootAuton().withTimeout(1.0),
+                subsystemCommands.visionAlignAndShootAuton().withTimeout(6.0), //WAS 5.0
                 drivetrain.stopCommand(),
                 subsystemCommands.hubShot().withTimeout(8.0),
 

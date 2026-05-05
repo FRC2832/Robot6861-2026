@@ -110,7 +110,7 @@ public final class SubsystemCommands {
             visionShotCommand,
             Commands.sequence(
                 // Align with timeout — shoots even if not perfectly aligned
-                alignCommand.withTimeout(.2), //was 1.5
+                alignCommand.withTimeout(1.2), //was 1.5, WAS 0.2
                 Commands.waitUntil(visionShotCommand::isReadyToShoot),
                 feed().withName("Vision Auton Feed")
             )
