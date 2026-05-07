@@ -190,7 +190,7 @@ public final class AutoRoutines {
                 Commands.parallel(
                     centerPickup.cmd(),
                     //intake.intakeCommand().withTimeout(4.0)
-                    intake.intakeCommand().alongWith(floor.feedCommand()).withTimeout(4.5).withName("IntakeAndFeed") //WAS 4.0
+                    intake.intakeCommand().alongWith(floor.feedCommand()).withTimeout(5.0).withName("IntakeAndFeed") //WAS 4.0
                 ),
 
                 centerToBump.cmd(),

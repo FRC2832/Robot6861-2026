@@ -24,7 +24,7 @@ public class VisionShotCommand extends Command {
         // ta at ~165 inches:              taToRPM.put(??, 4500);  taToHood.put(??, 0.48);
 
         
-        taToRPM.put(2.0, 3650.0);   taToHood.put(2.0, 0.0);    // hub shot (~48 in)
+        taToRPM.put(1.0, 3650.0);   taToHood.put(1.0, 0.0);    // hub shot (~48 in)
         taToRPM.put(0.8, 3950.0);   taToHood.put(0.8, 0.15); 
         taToRPM.put(.45, 4200.0);   taToHood.put(0.45, 0.20);
         taToRPM.put(.35, 4100.0);   taToHood.put(0.35, 0.21);  
